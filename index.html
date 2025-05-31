@@ -227,23 +227,44 @@
       toggleButton.innerText = body.classList.contains("dark") ? "🌞 Toggle Dark/Light" : "🌙 Toggle Dark/Light";
     }
 
+    // Regenerate password whenever relevant inputs change
+    function setupAutoGenerate() {
+      const controls = [
+        "lengthInput",
+        "lengthSlider",
+        "includeUpper",
+        "includeLower",
+        "includeNumbers",
+        "includeSymbols",
+        "safeSymbols"
+      ];
+      controls.forEach(id => {
+        document.getElementById(id).addEventListener("input", generatePassword);
+        document.getElementById(id).addEventListener("change", generatePassword);
+      });
+    }
+
     window.onload = function() {
-      const randomLength = Math.floor(Math.random() * (25 - 14 + 1)) + 14;
+      const randomLength = Math.floor(Math.random() * (30 - 16 + 1)) + 16;
       document.getElementById("lengthInput").value = randomLength;
       document.getElementById("lengthSlider").value = randomLength;
+
+      // Sync slider and input box
+      document.getElementById("lengthInput").addEventListener("input", function () {
+        let val = parseInt(this.value);
+        if (isNaN(val) || val < 8) val = 8;
+        if (val > 100) val = 100;
+        this.value = val;
+        document.getElementById("lengthSlider").value = val;
+      });
+
+      document.getElementById("lengthSlider").addEventListener("input", function () {
+        document.getElementById("lengthInput").value = this.value;
+      });
+
+      setupAutoGenerate();
+      generatePassword();
     };
-
-    document.getElementById("lengthInput").addEventListener("input", function () {
-      let val = parseInt(this.value);
-      if (val < 8) val = 8;
-      if (val > 100) val = 100;
-      this.value = val;
-      document.getElementById("lengthSlider").value = val;
-    });
-
-    document.getElementById("lengthSlider").addEventListener("input", function () {
-      document.getElementById("lengthInput").value = this.value;
-    });
   </script>
 </body>
 </html>
