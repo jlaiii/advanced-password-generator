@@ -22,9 +22,7 @@ A simple and customizable web app to generate strong, secure passwords. Users ca
 ## Live Demo
 
 Access the live version of this app here:  
-[https://jlaiii.github.io/advanced-password-generator/]([https://jlaiii.github.io/advanced-password-generator/)
-
-*(Replace `yourusername` and repo name with your actual GitHub info)*
+[https://jlaiii.github.io/advanced-password-generator/](https://jlaiii.github.io/advanced-password-generator/)
 
 ## Installation
 
@@ -32,3 +30,7 @@ To run locally:
 
 1. Clone or download this repository.
 2. Open the `index.html` file in your web browser.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
