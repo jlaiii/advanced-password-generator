@@ -44,7 +44,8 @@
 
     #copyButton,
     .github-button,
-    #themeToggle {
+    #themeToggle,
+    #lengthInput {
       cursor: pointer;
       font-size: 16px;
       padding: 8px 12px;
@@ -52,6 +53,18 @@
       background: #eee;
       border-radius: 5px;
       transition: background 0.3s, color 0.3s;
+    }
+
+    #lengthInput {
+      width: 60px;
+      text-align: center;
+      -moz-appearance: textfield;
+    }
+
+    #lengthInput::-webkit-inner-spin-button,
+    #lengthInput::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
 
     #copyMessage {
@@ -75,7 +88,8 @@
     }
 
     body.dark input,
-    body.dark #passwordInput {
+    body.dark #passwordInput,
+    body.dark #lengthSlider {
       background-color: #2c2c2c;
       color: #fff;
       border-color: #666;
@@ -83,7 +97,8 @@
 
     body.dark #copyButton,
     body.dark .github-button,
-    body.dark #themeToggle {
+    body.dark #themeToggle,
+    body.dark #lengthInput {
       background: #444;
       color: #fff;
     }
@@ -91,13 +106,27 @@
     body.dark #copyMessage {
       color: #90ee90;
     }
+
+    .length-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    #lengthSlider {
+      flex: 1;
+    }
   </style>
 </head>
 <body class="dark">
   <h2>Advanced Password Generator</h2>
 
-  <label for="length">Password Length: <span id="lengthValue">20</span></label>
-  <input type="range" id="length" min="8" max="50" value="20" oninput="document.getElementById('lengthValue').innerText = this.value">
+  <div class="length-controls">
+    <label for="lengthInput">Password Length:</label>
+    <input type="number" id="lengthInput" min="8" max="100" />
+    <input type="range" id="lengthSlider" min="8" max="100" />
+  </div>
 
   <div class="checkbox-group">
     <label><input type="checkbox" id="includeUpper" checked> Include Uppercase Letters</label>
@@ -109,7 +138,7 @@
     </label>
   </div>
 
-  <button onclick="generatePassword()">Generate Password</button>
+  <button class="github-button" onclick="generatePassword()">🔐 Generate Password</button>
 
   <div id="passwordBox">
     <input type="text" id="passwordInput" readonly placeholder="Your password will appear here">
@@ -133,7 +162,12 @@
       const allSymbols = "!@#$%^&*()_+{}[]<>?,./\\|=-";
       const safeSymbols = "!@#$%^&*()-_=+";
 
-      const length = parseInt(document.getElementById("length").value);
+      let length = parseInt(document.getElementById("lengthInput").value);
+      if (isNaN(length) || length < 8) length = 8;
+      if (length > 100) length = 100;
+      document.getElementById("lengthInput").value = length;
+      document.getElementById("lengthSlider").value = length;
+
       const useUpper = document.getElementById("includeUpper").checked;
       const useLower = document.getElementById("includeLower").checked;
       const useNumbers = document.getElementById("includeNumbers").checked;
@@ -194,8 +228,22 @@
     }
 
     window.onload = function() {
-      document.getElementById('lengthValue').innerText = document.getElementById('length').value;
+      const randomLength = Math.floor(Math.random() * (25 - 14 + 1)) + 14;
+      document.getElementById("lengthInput").value = randomLength;
+      document.getElementById("lengthSlider").value = randomLength;
     };
+
+    document.getElementById("lengthInput").addEventListener("input", function () {
+      let val = parseInt(this.value);
+      if (val < 8) val = 8;
+      if (val > 100) val = 100;
+      this.value = val;
+      document.getElementById("lengthSlider").value = val;
+    });
+
+    document.getElementById("lengthSlider").addEventListener("input", function () {
+      document.getElementById("lengthInput").value = this.value;
+    });
   </script>
 </body>
 </html>
