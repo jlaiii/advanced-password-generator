@@ -125,6 +125,12 @@
         message.style.color = "red";
       });
     }
+
+    window.onload = function() {
+      const lengthSlider = document.getElementById('length');
+      const lengthValue = document.getElementById('lengthValue');
+      lengthValue.innerText = lengthSlider.value;
+    };
   </script>
 </body>
 </html>
