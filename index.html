@@ -10,6 +10,7 @@
       padding: 20px;
       border: 1px solid #ccc;
       border-radius: 10px;
+      transition: background 0.3s, color 0.3s;
     }
 
     label {
@@ -32,13 +33,16 @@
       margin-right: 8px;
     }
 
-    #copyButton {
+    #copyButton,
+    .github-button,
+    #themeToggle {
       cursor: pointer;
-      font-size: 20px;
+      font-size: 16px;
       padding: 8px 12px;
       border: none;
       background: #eee;
       border-radius: 5px;
+      transition: background 0.3s, color 0.3s;
     }
 
     #copyMessage {
@@ -47,28 +51,41 @@
       height: 20px;
     }
 
-    .github-button {
-      display: inline-block;
-      padding: 10px 20px;
-      background-color: #24292e;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      font-weight: bold;
-      margin-top: 30px;
-      text-align: center;
+    .footer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 40px;
+      gap: 10px;
     }
 
-    .github-button:hover {
-      background-color: #444c56;
+    /* Dark mode styles */
+    body.dark {
+      background-color: #1e1e1e;
+      color: #f0f0f0;
+      border-color: #444;
     }
 
-    .github-container {
-      text-align: center;
+    body.dark input,
+    body.dark #passwordInput {
+      background-color: #2c2c2c;
+      color: #fff;
+      border-color: #666;
+    }
+
+    body.dark #copyButton,
+    body.dark .github-button,
+    body.dark #themeToggle {
+      background: #444;
+      color: #fff;
+    }
+
+    body.dark #copyMessage {
+      color: #90ee90;
     }
   </style>
 </head>
-<body>
+<body class="dark">
   <h2>Advanced Password Generator</h2>
 
   <label for="length">Password Length: <span id="lengthValue">12</span></label>
@@ -89,8 +106,9 @@
   
   <p id="copyMessage"></p>
 
-  <div class="github-container">
-    <a href="https://github.com/jlaiii/advanced-password-generator/tree/main" target="_blank" class="github-button">
+  <div class="footer-container">
+    <button id="themeToggle" onclick="toggleTheme()">🌞 Toggle Dark/Light</button>
+    <a href="https://github.com/yourusername/your-repo" target="_blank" class="github-button">
       🔗 See GitHub Project
     </a>
   </div>
@@ -150,6 +168,13 @@
         message.innerText = "Failed to copy.";
         message.style.color = "red";
       });
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const toggleButton = document.getElementById("themeToggle");
+      body.classList.toggle("dark");
+      toggleButton.innerText = body.classList.contains("dark") ? "🌞 Toggle Dark/Light" : "🌙 Toggle Dark/Light";
     }
 
     window.onload = function() {
