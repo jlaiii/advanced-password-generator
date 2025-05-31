@@ -18,6 +18,16 @@
       margin: 10px 0 5px;
     }
 
+    .checkbox-group {
+      margin: 8px 0;
+    }
+
+    /* Removed red and tooltip styling for safeSymbolsLabel */
+    #safeSymbolsLabel {
+      font-weight: normal;
+      color: inherit;
+    }
+
     #passwordBox {
       display: flex;
       align-items: center;
@@ -91,12 +101,16 @@
   <label for="length">Password Length: <span id="lengthValue">12</span></label>
   <input type="range" id="length" min="8" max="50" value="12" oninput="document.getElementById('lengthValue').innerText = this.value">
 
-  <label><input type="checkbox" id="includeUpper" checked> Include Uppercase Letters</label>
-  <label><input type="checkbox" id="includeLower" checked> Include Lowercase Letters</label>
-  <label><input type="checkbox" id="includeNumbers" checked> Include Numbers</label>
-  <label><input type="checkbox" id="includeSymbols" checked> Include Symbols</label>
+  <div class="checkbox-group">
+    <label><input type="checkbox" id="includeUpper" checked> Include Uppercase Letters</label>
+    <label><input type="checkbox" id="includeLower" checked> Include Lowercase Letters</label>
+    <label><input type="checkbox" id="includeNumbers" checked> Include Numbers</label>
+    <label><input type="checkbox" id="includeSymbols" checked> Include Symbols</label>
+    <label id="safeSymbolsLabel">
+      <input type="checkbox" id="safeSymbols" checked> Use Only Safe Symbols
+    </label>
+  </div>
 
-  <br>
   <button onclick="generatePassword()">Generate Password</button>
 
   <div id="passwordBox">
@@ -118,19 +132,23 @@
       const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       const lower = "abcdefghijklmnopqrstuvwxyz";
       const numbers = "0123456789";
-      const symbols = "!@#$%^&*()_+{}[]<>?,./\\|=-";
+      const allSymbols = "!@#$%^&*()_+{}[]<>?,./\\|=-";
+      const safeSymbols = "!@#$%^&*()-_=+";
 
       const length = parseInt(document.getElementById("length").value);
       const useUpper = document.getElementById("includeUpper").checked;
       const useLower = document.getElementById("includeLower").checked;
       const useNumbers = document.getElementById("includeNumbers").checked;
       const useSymbols = document.getElementById("includeSymbols").checked;
+      const useSafeSymbols = document.getElementById("safeSymbols").checked;
 
       let allChars = "";
       if (useUpper) allChars += upper;
       if (useLower) allChars += lower;
       if (useNumbers) allChars += numbers;
-      if (useSymbols) allChars += symbols;
+      if (useSymbols) {
+        allChars += useSafeSymbols ? safeSymbols : allSymbols;
+      }
 
       const inputBox = document.getElementById("passwordInput");
       const message = document.getElementById("copyMessage");
@@ -178,9 +196,7 @@
     }
 
     window.onload = function() {
-      const lengthSlider = document.getElementById('length');
-      const lengthValue = document.getElementById('lengthValue');
-      lengthValue.innerText = lengthSlider.value;
+      document.getElementById('lengthValue').innerText = document.getElementById('length').value;
     };
   </script>
 </body>
