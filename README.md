@@ -4,7 +4,7 @@ A simple and customizable web app to generate strong, secure passwords. Users ca
 
 ## Features
 
-- Adjustable password length (8 to 50 characters)
+- Adjustable password length (8 to 100 characters)
 - Options to include uppercase letters, lowercase letters, numbers, and symbols
 - Generates random and secure passwords
 - One-click copy password to clipboard
