@@ -138,19 +138,19 @@
     </label>
   </div>
 
-  <button class="github-button" onclick="generatePassword()">🔐 Generate Password</button>
+  <button class="github-button" onclick="generatePassword()">Generate Password</button>
 
   <div id="passwordBox">
     <input type="text" id="passwordInput" readonly placeholder="Your password will appear here">
-    <button id="copyButton" onclick="copyPassword()">📋</button>
+    <button id="copyButton" onclick="copyPassword()">Copy</button>
   </div>
   
   <p id="copyMessage"></p>
 
   <div class="footer-container">
-    <button id="themeToggle" onclick="toggleTheme()">🌞 Toggle Dark/Light</button>
+    <button id="themeToggle" onclick="toggleTheme()">Toggle Dark/Light</button>
     <a href="https://github.com/jlaiii/advanced-password-generator" target="_blank" class="github-button">
-      🔗 See GitHub Project
+      See GitHub Project
     </a>
   </div>
 
@@ -175,11 +175,24 @@
       const useSafeSymbols = document.getElementById("safeSymbols").checked;
 
       let allChars = "";
-      if (useUpper) allChars += upper;
-      if (useLower) allChars += lower;
-      if (useNumbers) allChars += numbers;
+      let guaranteedChars = [];
+
+      if (useUpper) {
+        allChars += upper;
+        guaranteedChars.push(upper[Math.floor(Math.random() * upper.length)]);
+      }
+      if (useLower) {
+        allChars += lower;
+        guaranteedChars.push(lower[Math.floor(Math.random() * lower.length)]);
+      }
+      if (useNumbers) {
+        allChars += numbers;
+        guaranteedChars.push(numbers[Math.floor(Math.random() * numbers.length)]);
+      }
       if (useSymbols) {
-        allChars += useSafeSymbols ? safeSymbols : allSymbols;
+        const symbolsToUse = useSafeSymbols ? safeSymbols : allSymbols;
+        allChars += symbolsToUse;
+        guaranteedChars.push(symbolsToUse[Math.floor(Math.random() * symbolsToUse.length)]);
       }
 
       const inputBox = document.getElementById("passwordInput");
@@ -192,13 +205,29 @@
         return;
       }
 
-      let password = "";
-      for (let i = 0; i < length; i++) {
-        const randomChar = allChars[Math.floor(Math.random() * allChars.length)];
-        password += randomChar;
+      // If the desired length is less than the number of guaranteed characters,
+      // adjust length to be at least the number of guaranteed characters.
+      if (length < guaranteedChars.length) {
+          length = guaranteedChars.length;
+          document.getElementById("lengthInput").value = length;
+          document.getElementById("lengthSlider").value = length;
       }
 
-      inputBox.value = password;
+      let passwordArray = guaranteedChars;
+
+      // Fill the rest of the password length with random characters
+      for (let i = passwordArray.length; i < length; i++) {
+        const randomChar = allChars[Math.floor(Math.random() * allChars.length)];
+        passwordArray.push(randomChar);
+      }
+
+      // Shuffle the array to ensure guaranteed characters aren't always at the beginning
+      for (let i = passwordArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
+      }
+
+      inputBox.value = passwordArray.join('');
       message.innerText = "";
     }
 
@@ -224,7 +253,7 @@
       const body = document.body;
       const toggleButton = document.getElementById("themeToggle");
       body.classList.toggle("dark");
-      toggleButton.innerText = body.classList.contains("dark") ? "🌞 Toggle Dark/Light" : "🌙 Toggle Dark/Light";
+      toggleButton.innerText = body.classList.contains("dark") ? "Toggle Dark/Light" : "Toggle Dark/Light";
     }
 
     // Regenerate password whenever relevant inputs change
