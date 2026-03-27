@@ -1,32 +1,81 @@
-# Advanced Password Generator
+# Advanced Password And Username Generator
 
-A simple and customizable web app to generate strong, secure passwords. Users can choose the length and types of characters to include (uppercase, lowercase, numbers, and symbols), and easily copy the generated password to the clipboard.
+This project is a browser-based credential generator built around the UI in `index.html`.
+It includes three main tools on one page:
 
-## Features
+- Username Generator
+- Password Generator
+- Batch Generator (multiple rows at once)
 
-- Adjustable password length (8 to 100 characters)
-- Options to include uppercase letters, lowercase letters, numbers, and symbols
-- Generates random and secure passwords
-- One-click copy password to clipboard
-- User-friendly and responsive design
+## What The `index.html` Page Includes
 
-## Usage
+### 1) Username Generator
 
-1. Open the web page (hosted live on GitHub Pages or locally).
-2. Adjust the password length slider to your desired length.
-3. Select which character types to include in the password.
-4. Click **Generate Password**.
-5. Your password will appear in the box below.
-6. Click the clipboard 📋 button to copy the password.
+- Multiple generation modes (words, names, anon, alphanumeric, mixed, leet, camel, initials)
+- Optional number inclusion
+- Configurable number count
+- Copy-to-clipboard support
+
+### 2) Password Generator
+
+- Length controls (number input + range slider)
+- Character set toggles:
+	- Uppercase
+	- Lowercase
+	- Numbers
+	- Symbols
+- Safe symbol mode
+- Minimum required numbers and symbols
+- Copy-to-clipboard with status message
+
+### 3) Export And History
+
+- Export current username + password as:
+	- CSV
+	- JSON
+	- One-per-line
+	- KeePass CSV
+- Optional encrypted export using a passphrase
+- Optional generation history panel
+- Optional encrypted history storage
+
+### 4) Batch Generator
+
+- Generate many credentials at once
+- Choose username and/or password generation
+- Batch password modes:
+	- Random
+	- Passphrase
+	- Pronounceable
+	- Template
+- Output pattern options (CSV, JSON, pair formats, custom)
+- Progress/ETA display
+- Preview and export controls
+
+### 5) Settings And UI
+
+- Dark/light theme toggle
+- Import/export settings
+- Reset to defaults
+
+## How To Run
+
+1. Clone or download this repository.
+2. Open `index.html` in any modern browser.
+3. Use the sections on the page to generate credentials.
+
+## Files
+
+- `index.html` - Main interface and inline generator logic
+- `script.js` - Additional generator data and helpers
+- `test-run.js` - Project test runner script
+
+## Security Notes
+
+- Randomness uses the Web Crypto API in the browser.
+- Generated credentials can be sensitive. Do not share exports or screenshots containing real credentials.
+- If you enable encryption features, keep your passphrase safe. Lost passphrases cannot be recovered.
 
 ## Live Demo
 
-Access the live version of this app here:  
-[https://jlaiii.github.io/advanced-password-generator/](https://jlaiii.github.io/advanced-password-generator/)
-
-## Installation
-
-To run locally:
-
-1. Clone or download this repository.
-2. Open the `index.html` file in your web browser.
+https://jlaiii.github.io/advanced-password-generator/
