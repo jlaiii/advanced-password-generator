@@ -71,6 +71,8 @@
       color: green;
       margin-top: 10px;
       height: 20px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
     }
 
     .footer-container {
@@ -117,118 +119,384 @@
     #lengthSlider {
       flex: 1;
     }
+    .section-divider {
+      border: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #ccc, transparent);
+      margin: 18px 0;
+    }
+    .divider-label {
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+      margin: -12px 0 8px;
+    }
   </style>
 </head>
 <body class="dark">
-  <h2>Advanced Password Generator</h2>
+  <h2><span id="titleDisplay">Username / Password / Batch Generator</span></h2>
+  <div style="margin-top:20px;">
+    <h3>Username Generator</h3>
+    <div class="checkbox-group">
+      <label><input type="checkbox" id="usernameIncludeNumbers" checked> Include Numbers</label>
+    </div>
 
-  <div class="length-controls">
-    <label for="lengthInput">Password Length:</label>
-    <input type="number" id="lengthInput" min="8" max="100" />
-    <input type="range" id="lengthSlider" min="8" max="100" />
+    <div class="checkbox-group">
+      <label for="usernameMode">Mode:</label>
+      <select id="usernameMode">
+        <option value="mixed">Mixed (names/words/anon/random)</option>
+        <option value="names">Common Names</option>
+        <option value="words" selected>Common Words + Number (default)</option>
+        <option value="words2">Two Words + Number</option>
+        <option value="name_word">Name + Word</option>
+        <option value="anon">Anonymous (prefix+digits)</option>
+        <option value="alphanum">Random Alphanumeric</option>
+        <option value="leet">Leet Word + Number</option>
+        <option value="camel">CamelCase Words</option>
+        <option value="initials">Initials + Number</option>
+      </select>
+    </div>
+
+    <div class="checkbox-group">
+      <label for="usernameNumberCount">Numbers Count:</label>
+      <input type="number" id="usernameNumberCount" min="0" max="10" value="6" />
+    </div>
+
+    <button id="generateUsernameBtn" class="github-button" onclick="generateUsername()">Generate Username</button>
+
+    <div id="usernameBox" style="margin-top:10px; display:flex; align-items:center;">
+      <input type="text" id="usernameInput" readonly placeholder="Generated username"
+             style="flex:1; padding:10px; font-size:16px; border:1px solid #999; border-radius:5px; margin-right:8px;">
+      <button id="copyUsernameButton" onclick="copyUsername()">Copy</button>
+    </div>
+    <p id="usernameCopyMessage"></p>
+    <!-- Username samples and presets removed per user request -->
   </div>
 
-  <div class="checkbox-group">
-    <label><input type="checkbox" id="includeUpper" checked> Include Uppercase Letters</label>
-    <label><input type="checkbox" id="includeLower" checked> Include Lowercase Letters</label>
-    <label><input type="checkbox" id="includeNumbers" checked> Include Numbers</label>
-    <label><input type="checkbox" id="includeSymbols" checked> Include Symbols</label>
-    <label id="safeSymbolsLabel">
-      <input type="checkbox" id="safeSymbols" checked> Use Only Safe Symbols
-    </label>
-  </div>
+  <hr class="section-divider" aria-hidden="true" />
+  <div class="divider-label">Password Generator</div>
 
-  <button class="github-button" onclick="generatePassword()">Generate Password</button>
+  
+
+  <details id="passwordOptions">
+    <summary style="cursor:pointer; font-weight:bold;">Password Options</summary>
+    <div class="length-controls">
+      <label for="lengthInput">Password Length:</label>
+      <input type="number" id="lengthInput" min="8" max="100" />
+      <input type="range" id="lengthSlider" min="8" max="100" />
+    </div>
+
+    <div class="checkbox-group">
+      <label><input type="checkbox" id="includeUpper" checked> Include Uppercase Letters</label>
+      <label><input type="checkbox" id="includeLower" checked> Include Lowercase Letters</label>
+      <label><input type="checkbox" id="includeNumbers" checked> Include Numbers</label>
+      <label><input type="checkbox" id="includeSymbols" checked> Include Symbols</label>
+      <label id="safeSymbolsLabel">
+        <input type="checkbox" id="safeSymbols" checked> Use Only Safe Symbols
+      </label>
+    </div>
+
+    <div class="checkbox-group">
+      <label for="minNumbers">Minimum Numbers (eg. 3):</label>
+      <input type="number" id="minNumbers" min="0" max="100" value="3" />
+
+      <label for="minSymbols">Minimum Symbols (eg. 3):</label>
+      <input type="number" id="minSymbols" min="0" max="100" value="3" />
+    </div>
+  </details>
+  <!-- Password mode, template, and entropy display removed per user request -->
+  <p id="passwordWarning" style="color:darkred;font-weight:bold;min-height:18px;margin-top:8px;"></p>
+  <!-- Password preview removed per user request -->
+
+  <!-- Word/Name theme selector removed per user request -->
+
+  <!-- Password samples section removed -->
+  <button id="generatePasswordBtn" class="github-button" onclick="generatePassword()">Generate Password</button>
 
   <div id="passwordBox">
     <input type="text" id="passwordInput" readonly placeholder="Your password will appear here">
     <button id="copyButton" onclick="copyPassword()">Copy</button>
   </div>
+  <div id="singleExport" style="margin-top:12px;border:1px solid #eee;padding:10px;border-radius:6px;background:rgba(255,255,255,0.02);">
+    <label for="exportFormat">Export Format:</label>
+    <select id="exportFormat" style="margin-left:6px;">
+      <option value="csv">CSV</option>
+      <option value="json">JSON</option>
+      <option value="oneperline">One-per-line</option>
+      <option value="keepass">KeePass CSV</option>
+    </select>
+    <label style="margin-left:8px;"><input type="checkbox" id="exportEncrypt"> Encrypt export</label>
+    <input type="password" id="exportPassphrase" placeholder="Passphrase (for encryption)" style="width:200px;margin-left:6px;" />
+    <button id="exportButton" onclick="exportCredentials()" class="github-button" style="margin-left:8px;">Export Username & Password</button>
+  </div>
+  <div style="margin-top:10px;">
+    <label><input type="checkbox" id="historyToggle"> Show Generation History</label>
+    <label style="margin-left:8px;"><input type="checkbox" id="historyEncrypt"> Encrypt History</label>
+    <input type="password" id="historyPassphrase" placeholder="History passphrase" style="width:200px;margin-left:6px;display:none;" />
+    <button class="github-button" id="clearHistoryBtn" style="margin-left:8px;display:none;" onclick="clearHistory()">Clear History</button>
+  </div>
+  <div id="historyPanel" style="display:none;margin-top:10px;border:1px solid #444;padding:8px;border-radius:6px;background:#0f0f0f;color:#ddd;max-height:240px;overflow:auto;">
+    <table id="historyTable" style="width:100%;border-collapse:collapse;font-family:monospace;font-size:13px;">
+      <thead><tr><th style="text-align:left">Time</th><th style="text-align:left">Username</th><th style="text-align:left">Password</th><th style="text-align:left">Source</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
   
   <p id="copyMessage"></p>
+  <!-- Batch generator: generate multiple username/password pairs -->
+  <div style="margin-top:20px; border-top:1px dashed #ccc; padding-top:12px;">
+    <h3>Batch Generator</h3>
+    <div class="checkbox-group">
+      <label for="batchCount">Count:</label>
+        <input type="number" id="batchCount" min="1" max="5000" value="10" style="width:80px;" />
+      <label><input type="checkbox" id="batchUsernames" checked> Generate Usernames</label>
+      <label><input type="checkbox" id="batchPasswords" checked> Generate Passwords</label>
+    </div>
+    <!-- Options Level removed per user request -->
+      <div class="checkbox-group">
+      <button class="github-button" id="batchGenerateBtn" onclick="generateBatch()">Generate Batch</button>
+      <button class="github-button" id="batchExportBtn" onclick="exportBatch()">Export Batch (CSV)</button>
+      <button class="github-button" id="batchCancelBtn" style="display:none;" onclick="cancelBatch()">Cancel</button>
+      <button class="github-button" id="batchPreviewBtn" onclick="generateBatchPreview()">Preview (3)</button>
+    </div>
+    <div style="margin-top:8px;">
+        <textarea id="batchOutput" readonly style="width:100%;height:200px;font-family:monospace;white-space:pre;"> </textarea>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <label><input type="checkbox" id="batchUnique"> Ensure Unique Rows</label>
+          <label>Attempts: <input type="number" id="batchUniqueAttempts" value="50" min="1" style="width:80px;"/></label>
+          <label><input type="checkbox" id="batchIncludeHeader" checked> Include Header</label>
+          <label><input type="checkbox" id="batchIncludeIndex"> Include Index</label>
+          <label><input type="checkbox" id="batchIncludeTimestamp"> Include Timestamp</label>
+          <label>CSV Sep: <input type="text" id="batchCsvSep" value="," maxlength="1" style="width:40px;"/></label>
+        </div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+          <progress id="batchProgress" value="0" max="100" style="flex:1;min-width:120px;"></progress>
+          <span id="batchStatus" style="min-width:160px;">Idle</span>
+          <span id="batchETA" style="min-width:140px;color:#666;text-align:right"></span>
+          <span id="batchSkipped" style="min-width:120px;color:darkred;margin-left:8px"></span>
+        </div>
+        <div style="margin-top:8px;">
+          <div id="batchPatternMsg" style="color:darkred;min-height:18px"></div>
+          <pre id="batchPreview" style="background:#111;color:#eee;padding:8px;display:none;max-height:160px;overflow:auto;margin-top:8px;"></pre>
+        </div>
+        <details>
+          <summary>Username Options</summary>
+          <label>Mode:
+            <select id="batchUsernameMode">
+              <option value="words">words</option>
+              <option value="words2">words2</option>
+              <option value="name_word">name_word</option>
+              <option value="anon">anon</option>
+              <option value="alphanum">alphanum</option>
+              <option value="leet">leet</option>
+              <option value="camel">camel</option>
+              <option value="initials">initials</option>
+              <option value="mixed">mixed</option>
+            </select>
+          </label>
+          <label>Include Numbers: <input type="checkbox" id="batchUsernameIncludeNumbers" checked></label>
+          <label>Number Count: <input type="number" id="batchUsernameNumberCount" value="6" min="0" max="10"></label>
+        </details>
 
-  <div class="footer-container">
-    <button id="themeToggle" onclick="toggleTheme()">Toggle Dark/Light</button>
-    <a href="https://github.com/jlaiii/advanced-password-generator" target="_blank" class="github-button">
-      See GitHub Project
-    </a>
+        <details>
+          <summary>Password Options</summary>
+          <label for="batchPasswordMode">Mode:</label>
+          <select id="batchPasswordMode">
+            <option value="random">Random (charset)</option>
+            <option value="passphrase">Passphrase (words)</option>
+            <option value="pronounceable">Pronounceable</option>
+            <option value="template">Template</option>
+          </select>
+          <div style="margin-top:6px;">
+            <label>Words Count: <input type="number" id="batchPassphraseCount" value="4" min="1" max="12" style="width:80px;"/></label>
+            <label>Separator: <input type="text" id="batchPassphraseSep" value="-" maxlength="3" style="width:60px;"/></label>
+            <label>Template: <input type="text" id="batchPasswordTemplate" placeholder="Ccll-dd" style="width:140px;"/></label>
+          </div>
+          <label>Length: <input type="number" id="batchPasswordLength" value="20" min="4" max="256"></label>
+          <label><input type="checkbox" id="batchIncludeUpper" checked> Include Upper</label>
+          <label><input type="checkbox" id="batchIncludeLower" checked> Include Lower</label>
+          <label><input type="checkbox" id="batchIncludeNumbers" checked> Include Numbers</label>
+          <label><input type="checkbox" id="batchIncludeSymbols" checked> Include Symbols</label>
+          <label data-level="advanced">Min Numbers: <input type="number" id="batchMinNumbers" value="3" min="0" max="10"></label>
+          <label data-level="advanced">Min Symbols: <input type="number" id="batchMinSymbols" value="3" min="0" max="10"></label>
+        </details>
+        <div style="margin-top:8px;">
+          <label>Batch Output Pattern: 
+            <select id="batchOutputPattern" style="margin-left:6px;">
+              <option value="csv">CSV (columns)</option>
+              <option value="json">JSON (array)</option>
+              <option value="pair_colon">username:password</option>
+              <option value="pair_tab">username\tpassword</option>
+              <option value="pair_comma">username,password</option>
+              <option value="custom">Custom template</option>
+            </select>
+          </label>
+          <label id="batchCustomPatternLabel" style="display:none; margin-left:8px;">Template: <input id="batchCustomPattern" placeholder="{username}:{password}" style="width:200px;" /></label>
+        </div>
+    </div>
   </div>
 
+  <div class="footer-container">
+    <!-- Export controls moved to single-export area under Password Generator -->
+    <button id="exportSettings" class="github-button">Export Settings</button>
+    <input type="file" id="importSettingsFile" style="display:none;" accept="application/json" />
+    <button id="importSettings" class="github-button">Import Settings</button>
+    <button id="resetDefaults" class="github-button" onclick="resetSettings()" style="margin-top:8px;background:#f8d7da;color:#721c24;">Reset To Defaults</button>
+  </div>
+
+  <hr style="margin-top:20px;border:0;height:1px;background:linear-gradient(90deg,transparent,#ccc,transparent)">
+  <div style="text-align:center;margin-top:12px;padding-top:8px;">
+    <button id="themeToggle" onclick="toggleTheme()">Toggle Dark/Light</button>
+    <a href="https://github.com/jlaiii/advanced-password-generator" target="_blank" class="github-button" style="margin-left:12px;">See GitHub Project</a>
+  </div>
+
+  <div id="debugPanel" aria-live="polite" style="position:fixed;bottom:6px;right:6px;background:#222;color:#fff;padding:8px;border-radius:6px;max-width:360px;display:none;z-index:9999;font-size:13px"></div>
+
+  <script src="script.js"></script>
+
   <script>
-    function generatePassword() {
+    
+    function createPassword(opts = {}) {
       const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       const lower = "abcdefghijklmnopqrstuvwxyz";
       const numbers = "0123456789";
       const allSymbols = "!@#$%^&*()_+{}[]<>?,./\\|=-";
       const safeSymbols = "!@#$%^&*()-_=+";
+      const mode = opts.mode || (document.getElementById("passwordMode") ? document.getElementById("passwordMode").value : 'random');
 
-      let length = parseInt(document.getElementById("lengthInput").value);
+      // Passphrase mode
+      if (mode === 'passphrase') {
+        const wc = (typeof opts.passphraseCount === 'number') ? opts.passphraseCount : (document.getElementById('passphraseCount') ? parseInt(document.getElementById('passphraseCount').value,10) || 4 : 4);
+        const sep = (typeof opts.passphraseSep === 'string') ? opts.passphraseSep : (document.getElementById('passphraseSep') ? document.getElementById('passphraseSep').value : '-');
+        const words = [];
+        const wlist = getWordList();
+        for (let i = 0; i < wc; i++) words.push(pick(wlist));
+        return words.join(sep);
+      }
+
+      // Pronounceable mode (simple consonant-vowel alternation)
+      if (mode === 'pronounceable') {
+        let len = typeof opts.length === 'number' ? opts.length : parseInt(document.getElementById("lengthInput").value);
+        if (isNaN(len) || len < 4) len = 4;
+        const consonants = 'bcdfghjklmnpqrstvwxyz';
+        const vowels = 'aeiou';
+        let s = '';
+        for (let i = 0; i < len; i++) {
+          if (i % 2 === 0) s += consonants[secureRandInt(consonants.length)];
+          else s += vowels[secureRandInt(vowels.length)];
+        }
+        if (typeof opts.useUpper === 'boolean' ? opts.useUpper : document.getElementById('includeUpper').checked) {
+          // randomly capitalize some characters for more variation
+          s = s.split('').map((ch, i) => (i % 2 === 0 ? ch.toUpperCase() : ch)).join('');
+        }
+        return s;
+      }
+
+      // Template mode
+      if (mode === 'template') {
+        const tpl = (typeof opts.template === 'string') ? opts.template : (document.getElementById('passwordTemplate') ? document.getElementById('passwordTemplate').value : '');
+        if (!tpl) {
+          // fall back to random
+        } else {
+          let out = '';
+          const sym = (typeof opts.useSafeSymbols === 'boolean' ? (opts.useSafeSymbols ? safeSymbols : allSymbols) : (document.getElementById('safeSymbols') && document.getElementById('safeSymbols').checked ? safeSymbols : allSymbols));
+          for (let i = 0; i < tpl.length; i++) {
+            const c = tpl[i];
+            if (c === 'C') out += upper[secureRandInt(upper.length)];
+            else if (c === 'c') out += lower[secureRandInt(lower.length)];
+            else if (c === 'd') out += numbers[secureRandInt(numbers.length)];
+            else if (c === 's') out += sym[secureRandInt(sym.length)];
+            else out += c;
+          }
+          return out;
+        }
+      }
+      let length = typeof opts.length === 'number' ? opts.length : parseInt(document.getElementById("lengthInput").value);
       if (isNaN(length) || length < 8) length = 8;
       if (length > 100) length = 100;
-      document.getElementById("lengthInput").value = length;
-      document.getElementById("lengthSlider").value = length;
 
-      const useUpper = document.getElementById("includeUpper").checked;
-      const useLower = document.getElementById("includeLower").checked;
-      const useNumbers = document.getElementById("includeNumbers").checked;
-      const useSymbols = document.getElementById("includeSymbols").checked;
-      const useSafeSymbols = document.getElementById("safeSymbols").checked;
+      const useUpper = typeof opts.useUpper === 'boolean' ? opts.useUpper : document.getElementById("includeUpper").checked;
+      const useLower = typeof opts.useLower === 'boolean' ? opts.useLower : document.getElementById("includeLower").checked;
+      const useNumbers = typeof opts.useNumbers === 'boolean' ? opts.useNumbers : document.getElementById("includeNumbers").checked;
+      const useSymbols = typeof opts.useSymbols === 'boolean' ? opts.useSymbols : document.getElementById("includeSymbols").checked;
+      const useSafeSymbols = typeof opts.useSafeSymbols === 'boolean' ? opts.useSafeSymbols : document.getElementById("safeSymbols").checked;
+      const minNumbers = typeof opts.minNumbers === 'number' ? opts.minNumbers : (parseInt(document.getElementById("minNumbers").value, 10) || 0);
+      const minSymbols = typeof opts.minSymbols === 'number' ? opts.minSymbols : (parseInt(document.getElementById("minSymbols").value, 10) || 0);
 
       let allChars = "";
       let guaranteedChars = [];
 
       if (useUpper) {
         allChars += upper;
-        guaranteedChars.push(upper[Math.floor(Math.random() * upper.length)]);
+        guaranteedChars.push(upper[secureRandInt(upper.length)]);
       }
       if (useLower) {
         allChars += lower;
-        guaranteedChars.push(lower[Math.floor(Math.random() * lower.length)]);
+        guaranteedChars.push(lower[secureRandInt(lower.length)]);
       }
       if (useNumbers) {
         allChars += numbers;
-        guaranteedChars.push(numbers[Math.floor(Math.random() * numbers.length)]);
+        for (let i = 0; i < minNumbers; i++) {
+          guaranteedChars.push(numbers[secureRandInt(numbers.length)]);
+        }
       }
       if (useSymbols) {
         const symbolsToUse = useSafeSymbols ? safeSymbols : allSymbols;
         allChars += symbolsToUse;
-        guaranteedChars.push(symbolsToUse[Math.floor(Math.random() * symbolsToUse.length)]);
+        for (let i = 0; i < minSymbols; i++) {
+          guaranteedChars.push(symbolsToUse[secureRandInt(symbolsToUse.length)]);
+        }
       }
 
-      const inputBox = document.getElementById("passwordInput");
-      const message = document.getElementById("copyMessage");
+      if (allChars === "") return '';
 
-      if (allChars === "") {
-        inputBox.value = "";
-        message.innerText = "Please select at least one character type!";
-        message.style.color = "red";
+      if (length < guaranteedChars.length) length = guaranteedChars.length;
+
+      const passwordArray = Array.from(guaranteedChars);
+      for (let i = passwordArray.length; i < length; i++) {
+        passwordArray.push(allChars[secureRandInt(allChars.length)]);
+      }
+      for (let i = passwordArray.length - 1; i > 0; i--) {
+        const j = secureRandInt(i + 1);
+        [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
+      }
+      return passwordArray.join('');
+    }
+
+    function generatePassword() {
+        // Use createPassword() for creation and update UI
+        const inputBox = document.getElementById("passwordInput");
+        const message = document.getElementById("copyMessage");
+      const warnEl = document.getElementById('passwordWarning');
+      warnEl.innerText = '';
+
+      // Basic validation for random charset mode
+      const mode = document.getElementById('passwordMode') ? document.getElementById('passwordMode').value : 'random';
+      const length = parseInt(document.getElementById('lengthInput').value,10) || 0;
+      const minNumbers = parseInt(document.getElementById('minNumbers').value,10) || 0;
+      const minSymbols = parseInt(document.getElementById('minSymbols').value,10) || 0;
+      const useUpper = document.getElementById('includeUpper').checked;
+      const useLower = document.getElementById('includeLower').checked;
+      const useNumbers = document.getElementById('includeNumbers').checked;
+      const useSymbols = document.getElementById('includeSymbols').checked;
+
+      if (mode === 'random' && !useUpper && !useLower && !useNumbers && !useSymbols) {
+        warnEl.innerText = 'Select at least one character class for random mode.';
+        inputBox.value = '';
+        return;
+      }
+      if ((mode === 'random' || mode === 'template') && (minNumbers + minSymbols) > length) {
+        warnEl.innerText = 'Minimum numbers+symbols exceed the password length.';
+        inputBox.value = '';
         return;
       }
 
-      // If the desired length is less than the number of guaranteed characters,
-      // adjust length to be at least the number of guaranteed characters.
-      if (length < guaranteedChars.length) {
-          length = guaranteedChars.length;
-          document.getElementById("lengthInput").value = length;
-          document.getElementById("lengthSlider").value = length;
-      }
-
-      let passwordArray = guaranteedChars;
-
-      // Fill the rest of the password length with random characters
-      for (let i = passwordArray.length; i < length; i++) {
-        const randomChar = allChars[Math.floor(Math.random() * allChars.length)];
-        passwordArray.push(randomChar);
-      }
-
-      // Shuffle the array to ensure guaranteed characters aren't always at the beginning
-      for (let i = passwordArray.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
-      }
-
-      inputBox.value = passwordArray.join('');
+      const pwd = createPassword();
+      inputBox.value = pwd;
+      // entropy display removed
       message.innerText = "";
+      try { saveToHistory({ username: document.getElementById('usernameInput') ? document.getElementById('usernameInput').value : null, password: pwd, source: 'single-password', timestamp: new Date().toISOString() }); } catch (e) {}
+      return;
     }
 
     function copyPassword() {
@@ -240,13 +508,744 @@
       navigator.clipboard.writeText(inputBox.value).then(() => {
         message.innerText = "Password copied to clipboard!";
         message.style.color = "green";
+        // show and then fade out over 4s
+        message.style.opacity = '1';
+        // keep visible for 4s, then fade
         setTimeout(() => {
-          message.innerText = "";
-        }, 1000);
+          message.style.opacity = '0';
+          // remove text after the fade completes (match transition 0.5s)
+          setTimeout(() => { message.innerText = ''; }, 600);
+        }, 4000);
+        
       }).catch(err => {
         message.innerText = "Failed to copy.";
         message.style.color = "red";
       });
+    }
+
+    // clipboard auto-clear helper
+    
+
+    // commonNames and commonWords are already declared via script.js (const in global scope).
+    // Do NOT redeclare them here — a second const would cause a SyntaxError that kills this entire script block.
+
+    function randInt(min, max) {
+      // cryptographically secure random integer in [min, max]
+      return secureRandIntRange(min, max);
+    }
+    // Secure random helpers using Web Crypto API
+    function secureRandUint32() {
+      const arr = new Uint32Array(1);
+      window.crypto.getRandomValues(arr);
+      return arr[0];
+    }
+
+    function secureRandInt(maxExclusive) {
+      // returns integer in [0, maxExclusive-1]
+      if (maxExclusive <= 0) return 0;
+      const maxUint32 = 0xFFFFFFFF;
+      const limit = maxUint32 - (maxUint32 % maxExclusive);
+      let r = secureRandUint32();
+      while (r >= limit) r = secureRandUint32();
+      return r % maxExclusive;
+    }
+
+    function secureRandIntRange(min, max) {
+      // inclusive min..max
+      const span = max - min + 1;
+      return min + secureRandInt(span);
+    }
+
+    function secureRandFloat() {
+      // secure fraction [0,1)
+      return secureRandInt(1000000) / 1000000;
+    }
+
+    function pick(arr) {
+      return arr[secureRandInt(arr.length)];
+    }
+
+    // ------------------- History storage & protection -------------------
+    // Saves an entry only if history display is enabled. Optionally encrypts history with a passphrase.
+    async function saveToHistory(entry) {
+      try {
+        const enabled = document.getElementById('historyToggle') && document.getElementById('historyToggle').checked;
+        if (!enabled) return;
+        const encrypt = document.getElementById('historyEncrypt') && document.getElementById('historyEncrypt').checked;
+        const keyPlain = 'apg_history';
+        const keyEnc = 'apg_history_enc';
+
+        if (encrypt) {
+          const pass = document.getElementById('historyPassphrase').value || '';
+          if (!pass) { alert('Enable history encryption: provide a passphrase'); return; }
+          // load existing encrypted blob (if any)
+          const existing = localStorage.getItem(keyEnc);
+          let arr = [];
+          if (existing) {
+            try {
+              const dec = await decryptTextWithPassphrase(existing, pass);
+              arr = JSON.parse(dec || '[]');
+            } catch (e) {
+              alert('Failed to decrypt existing history. Wrong passphrase?');
+              return;
+            }
+          }
+          arr.push(entry);
+          const enc = await encryptTextWithPassphrase(JSON.stringify(arr), pass);
+          localStorage.setItem(keyEnc, enc);
+          // remove plaintext if present
+          localStorage.removeItem(keyPlain);
+        } else {
+          // store in plaintext localStorage (opt-in)
+          const existing = localStorage.getItem(keyPlain);
+          const arr = existing ? JSON.parse(existing) : [];
+          arr.push(entry);
+          localStorage.setItem(keyPlain, JSON.stringify(arr));
+          // remove encrypted if present
+          localStorage.removeItem(keyEnc);
+        }
+        renderHistory();
+      } catch (e) { console.error('saveToHistory error', e); }
+    }
+
+    async function loadHistory() {
+      const enabled = document.getElementById('historyToggle') && document.getElementById('historyToggle').checked;
+      if (!enabled) return [];
+      const keyPlain = 'apg_history';
+      const keyEnc = 'apg_history_enc';
+      const encBlob = localStorage.getItem(keyEnc);
+      if (encBlob) {
+        // encrypted history exists, require encryption checkbox+passphrase
+        const useEnc = document.getElementById('historyEncrypt') && document.getElementById('historyEncrypt').checked;
+        const pass = document.getElementById('historyPassphrase').value || '';
+        if (!useEnc || !pass) {
+          // Can't read encrypted history without passphrase
+          return null;
+        }
+        try {
+          const dec = await decryptTextWithPassphrase(encBlob, pass);
+          return JSON.parse(dec || '[]');
+        } catch (e) {
+          return null;
+        }
+      }
+      const plain = localStorage.getItem(keyPlain);
+      return plain ? JSON.parse(plain) : [];
+    }
+
+    function renderHistory() {
+      loadHistory().then(arr => {
+        const tbody = document.querySelector('#historyTable tbody');
+        tbody.innerHTML = '';
+        if (!arr) {
+          // decryption failed or missing passphrase
+          const tr = document.createElement('tr');
+          const td = document.createElement('td'); td.colSpan = 5; td.style.color = 'orange'; td.textContent = 'History is encrypted. Enable "Encrypt History" and provide passphrase to view.'; tr.appendChild(td); tbody.appendChild(tr);
+          document.getElementById('clearHistoryBtn').style.display = 'inline-block';
+          document.getElementById('historyPanel').style.display = 'block';
+          return;
+        }
+        if (!arr.length) {
+          const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 5; td.textContent = 'No history yet.'; tr.appendChild(td); tbody.appendChild(tr);
+        } else {
+          arr.slice().reverse().forEach((it, idx) => {
+            const tr = document.createElement('tr');
+            const t0 = document.createElement('td'); t0.textContent = new Date(it.timestamp).toLocaleString(); tr.appendChild(t0);
+            const t1 = document.createElement('td'); t1.textContent = it.username || ''; tr.appendChild(t1);
+            const t2 = document.createElement('td'); t2.textContent = it.password || ''; tr.appendChild(t2);
+            const t3 = document.createElement('td'); t3.textContent = it.source || ''; tr.appendChild(t3);
+            const t4 = document.createElement('td'); const cb = document.createElement('button'); cb.textContent = 'Copy'; cb.onclick = () => { navigator.clipboard.writeText((it.password || it.username || '')); }; t4.appendChild(cb); tr.appendChild(t4);
+            tbody.appendChild(tr);
+          });
+        }
+        document.getElementById('clearHistoryBtn').style.display = 'inline-block';
+        document.getElementById('historyPanel').style.display = 'block';
+      });
+    }
+
+    function clearHistory() {
+      if (!confirm('Clear stored generation history? This cannot be undone.')) return;
+      localStorage.removeItem('apg_history');
+      localStorage.removeItem('apg_history_enc');
+      const tbody = document.querySelector('#historyTable tbody'); tbody.innerHTML = '';
+      document.getElementById('clearHistoryBtn').style.display = 'none';
+      document.getElementById('historyPanel').style.display = 'none';
+    }
+
+    // encryption helpers for history (text-level)
+    async function encryptTextWithPassphrase(text, passphrase) {
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const pwBuf = new TextEncoder().encode(passphrase);
+      const baseKey = await crypto.subtle.importKey('raw', pwBuf, 'PBKDF2', false, ['deriveKey']);
+      const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' }, baseKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+      const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, new TextEncoder().encode(text));
+      return JSON.stringify({ salt: arrayBufferToBase64(salt.buffer), iv: arrayBufferToBase64(iv.buffer), data: arrayBufferToBase64(ct) });
+    }
+
+    async function decryptTextWithPassphrase(blobStr, passphrase) {
+      const obj = JSON.parse(blobStr);
+      const salt = base64ToArrayBuffer(obj.salt);
+      const iv = base64ToArrayBuffer(obj.iv);
+      const data = base64ToArrayBuffer(obj.data);
+      const pwBuf = new TextEncoder().encode(passphrase);
+      const baseKey = await crypto.subtle.importKey('raw', pwBuf, 'PBKDF2', false, ['deriveKey']);
+      const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: new Uint8Array(salt), iterations: 100000, hash: 'SHA-256' }, baseKey, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+      const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(iv) }, key, new Uint8Array(data));
+      return new TextDecoder().decode(plain);
+    }
+
+    function base64ToArrayBuffer(base64) {
+      const binary = atob(base64);
+      const len = binary.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+      return bytes.buffer;
+    }
+
+    // Wire up history toggle & encryption visibility
+    document.addEventListener('DOMContentLoaded', () => {
+      const histToggle = document.getElementById('historyToggle');
+      const histEnc = document.getElementById('historyEncrypt');
+      const histPass = document.getElementById('historyPassphrase');
+      if (histToggle) histToggle.addEventListener('change', () => { if (histToggle.checked) renderHistory(); else { document.getElementById('historyPanel').style.display = 'none'; document.getElementById('clearHistoryBtn').style.display = 'none'; } });
+      if (histEnc) histEnc.addEventListener('change', () => { histPass.style.display = histEnc.checked ? 'inline-block' : 'none'; if (document.getElementById('historyToggle').checked) renderHistory(); });
+      // render on load if enabled
+      if (document.getElementById('historyToggle') && document.getElementById('historyToggle').checked) renderHistory();
+    });
+
+    function randomDigits(n) {
+      let s = "";
+      for (let i = 0; i < n; i++) s += String(secureRandInt(10));
+      return s;
+    }
+
+    function makeAnon(numCount) {
+      const prefix = pick(["XUSID","USER","ANON","GUEST","UID"]);
+      return prefix + randomDigits(numCount || 6);
+    }
+
+    function makeAlphaNum(len) {
+      const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+      let s = "";
+      for (let i = 0; i < len; i++) s += chars[secureRandInt(chars.length)];
+      return s;
+    }
+
+    // extended themed word/name lists
+    const wordThemes = {
+      default: commonWords,
+      tech: ["kernel","vector","byte","cloud","quantum","neuron","matrix","crypto","pixel","cache","node","daemon","orbit","flux","nodejs","lambda"],
+      fantasy: ["dragon","wyrm","ember","myst","rune","sylph","goblin","fae","arcane","lore","throne","mist","ember","griffin"],
+      animals: ["fox","wolf","eagle","otter","lynx","tiger","panther","falcon","shark","orca","heron","raven"]
+    };
+
+    function getWordList() {
+      const t = document.getElementById('wordTheme') ? document.getElementById('wordTheme').value : 'default';
+      return wordThemes[t] || commonWords;
+    }
+
+    function toCamel(a, b) {
+      const A = a.charAt(0).toUpperCase() + a.slice(1);
+      const B = b.charAt(0).toUpperCase() + b.slice(1);
+      return A + B;
+    }
+
+    function leetify(s) {
+      return s.replace(/a/gi, '4')
+              .replace(/e/gi, '3')
+              .replace(/i/gi, '1')
+              .replace(/o/gi, '0')
+              .replace(/s/gi, '5')
+              .replace(/t/gi, '7');
+    }
+
+    function createUsername({mode, includeNumbers, numCount} = {}) {
+      // Accepts overrides or reads current UI state when not provided
+      mode = mode || (document.getElementById("usernameMode") ? document.getElementById("usernameMode").value : 'mixed');
+      includeNumbers = typeof includeNumbers === 'boolean' ? includeNumbers : document.getElementById("usernameIncludeNumbers").checked;
+      numCount = typeof numCount === 'number' ? numCount : (parseInt(document.getElementById("usernameNumberCount").value, 10) || 0);
+      // Determine whether names/words are considered for the 'mixed' mode
+      let useNames = false, useWords = false;
+      if (mode === 'mixed') { useNames = true; useWords = true; }
+      else {
+        useNames = (mode === 'names' || mode === 'name_word' || mode === 'initials');
+        useWords = (mode === 'words' || mode === 'words2' || mode === 'name_word' || mode === 'leet' || mode === 'camel');
+      }
+
+      let username = '';
+
+      if (mode === 'names') {
+        const list = (document.getElementById('wordTheme') && document.getElementById('wordTheme').value === 'animals') ? commonNames : commonNames;
+        username = pick(list);
+        if (includeNumbers && numCount > 0) username += randomDigits(numCount);
+      } else if (mode === 'words') {
+        username = pick(getWordList()) + (includeNumbers && numCount > 0 ? randomDigits(numCount) : '');
+      } else if (mode === 'words2') {
+        const w1 = pick(getWordList());
+        const w2 = pick(getWordList());
+        username = w1 + w2 + (includeNumbers && numCount > 0 ? randomDigits(numCount) : '');
+      } else if (mode === 'name_word') {
+        username = pick(commonNames) + pick(getWordList()) + (includeNumbers && numCount > 0 ? randomDigits(numCount) : '');
+      } else if (mode === 'anon') {
+        username = makeAnon(numCount || 6);
+      } else if (mode === 'alphanum') {
+        const len = secureRandIntRange(6, 12);
+        username = makeAlphaNum(len);
+      } else if (mode === 'leet') {
+        const base = pick(commonWords);
+        username = leetify(base) + (includeNumbers && numCount > 0 ? randomDigits(numCount) : '');
+      } else if (mode === 'camel') {
+        const a = pick(commonWords);
+        const b = pick(commonWords);
+        username = toCamel(a, b) + (includeNumbers && numCount > 0 ? randomDigits(numCount) : '');
+      } else if (mode === 'initials') {
+        const a = pick(commonNames);
+        const b = pick(commonNames);
+        username = (a.charAt(0) + b.charAt(0)).toUpperCase() + (includeNumbers && numCount > 0 ? randomDigits(numCount) : '');
+      } else { // mixed
+        const generators = [];
+        if (useNames) generators.push(() => {
+          let name = pick(commonNames);
+          if (includeNumbers && numCount > 0) name += randomDigits(numCount);
+          if (secureRandFloat() < 0.2) name = name + secureRandIntRange(10,99);
+          return name;
+        });
+        if (useWords) generators.push(() => {
+          let word = pick(commonWords);
+          if (includeNumbers && numCount > 0) word += randomDigits(numCount);
+          if (secureRandFloat() < 0.2) word = word + secureRandIntRange(1,9);
+          return word;
+        });
+        generators.push(() => makeAnon(numCount || 6));
+        generators.push(() => makeAlphaNum(secureRandIntRange(6,10)));
+
+        username = pick(generators)();
+      }
+
+      return username;
+    }
+
+    function generateUsername() {
+      const u = createUsername();
+      document.getElementById("usernameInput").value = u;
+      document.getElementById("usernameCopyMessage").innerText = "";
+      try { saveToHistory({ username: u, password: null, source: 'single-username', timestamp: new Date().toISOString() }); } catch (e) {}
+    }
+
+    function copyUsername() {
+      const input = document.getElementById("usernameInput");
+      const msg = document.getElementById("usernameCopyMessage");
+      if (!input.value) return;
+      navigator.clipboard.writeText(input.value).then(() => {
+        msg.innerText = "Username copied to clipboard!";
+        msg.style.color = "green";
+        setTimeout(() => { msg.innerText = ""; }, 1000);
+        // schedule optional clipboard clear
+        
+      }).catch(() => {
+        msg.innerText = "Failed to copy.";
+        msg.style.color = "red";
+      });
+    }
+
+    function exportCredentials() {
+      const username = document.getElementById('usernameInput').value || '';
+      const password = document.getElementById('passwordInput').value || '';
+      const msg = document.getElementById('copyMessage');
+      const userMsg = document.getElementById('usernameCopyMessage');
+
+      if (!username && !password) {
+        if (msg) { msg.innerText = 'Nothing to export.'; msg.style.color = 'red'; }
+        return;
+      }
+
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const fname = `credentials_${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.txt`;
+
+      let content = '';
+      if (username) content += `username: ${username}\n`;
+      if (password) content += `password: ${password}\n`;
+      content += `generatedAt: ${now.toISOString()}\n`;
+
+      const exportFormat = (document.getElementById('exportFormat') ? document.getElementById('exportFormat').value : 'csv');
+      const encrypt = document.getElementById('exportEncrypt') ? document.getElementById('exportEncrypt').checked : false;
+      const passphrase = document.getElementById('exportPassphrase') ? document.getElementById('exportPassphrase').value : '';
+
+      let blob;
+      if (exportFormat === 'json') {
+        blob = new Blob([JSON.stringify({ username, password, generatedAt: now.toISOString() }, null, 2)], { type: 'application/json' });
+      } else if (exportFormat === 'oneperline') {
+        blob = new Blob([content], { type: 'text/plain' });
+      } else if (exportFormat === 'keepass') {
+        // simple KeePass CSV: Title, UserName, Password, URL, Notes
+        const line = `"${username}","${username}","${password}","","generatedAt:${now.toISOString()}"`;
+        blob = new Blob([line], { type: 'text/csv' });
+      } else {
+        blob = new Blob([content], { type: 'text/csv' });
+      }
+
+      if (encrypt && passphrase) {
+        encryptBlobWithPassphrase(blob, passphrase).then(encBlob => {
+          downloadBlob(encBlob, fname + '.enc.json');
+        }).catch(() => { alert('Encryption failed'); });
+      } else {
+        downloadBlob(blob, fname);
+      }
+
+      if (msg) { msg.innerText = 'Exported to file.'; msg.style.color = 'green'; setTimeout(()=>{ msg.innerText=''; },1500); }
+      if (userMsg) { userMsg.innerText = ''; }
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    async function encryptBlobWithPassphrase(blob, passphrase) {
+      const data = await blob.arrayBuffer();
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const pwBuf = new TextEncoder().encode(passphrase);
+      const baseKey = await crypto.subtle.importKey('raw', pwBuf, 'PBKDF2', false, ['deriveKey']);
+      const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' }, baseKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+      const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, data);
+      const out = {
+        salt: arrayBufferToBase64(salt.buffer),
+        iv: arrayBufferToBase64(iv.buffer),
+        data: arrayBufferToBase64(ct)
+      };
+      return new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+    }
+
+    function arrayBufferToBase64(buf) {
+      const bytes = new Uint8Array(buf);
+      let binary = '';
+      for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+      return btoa(binary);
+    }
+
+    // Batch generation and export
+    function estimateEntropyForPassword(opts = {}) {
+      const mode = opts.mode || (document.getElementById("passwordMode") ? document.getElementById("passwordMode").value : 'random');
+      if (mode === 'passphrase') {
+        const wc = typeof opts.passphraseCount === 'number' ? opts.passphraseCount : (document.getElementById('passphraseCount') ? parseInt(document.getElementById('passphraseCount').value,10) || 4 : 4);
+        const wordlistSize = commonWords.length || 2048;
+        return wc * (Math.log2(wordlistSize));
+      }
+      if (mode === 'pronounceable') {
+        const len = typeof opts.length === 'number' ? opts.length : parseInt(document.getElementById("lengthInput").value);
+        // approximate 3.0 bits per character for simple pronounceable
+        return (isNaN(len) ? 0 : len * 3.0);
+      }
+      // random charset
+      const useUpper = typeof opts.useUpper === 'boolean' ? opts.useUpper : document.getElementById("includeUpper").checked;
+      const useLower = typeof opts.useLower === 'boolean' ? opts.useLower : document.getElementById("includeLower").checked;
+      const useNumbers = typeof opts.useNumbers === 'boolean' ? opts.useNumbers : document.getElementById("includeNumbers").checked;
+      const useSymbols = typeof opts.useSymbols === 'boolean' ? opts.useSymbols : document.getElementById("includeSymbols").checked;
+      const useSafeSymbols = typeof opts.useSafeSymbols === 'boolean' ? opts.useSafeSymbols : document.getElementById("safeSymbols") ? document.getElementById("safeSymbols").checked : true;
+      let charsetSize = 0;
+      if (useUpper) charsetSize += 26;
+      if (useLower) charsetSize += 26;
+      if (useNumbers) charsetSize += 10;
+      if (useSymbols) charsetSize += (useSafeSymbols ? "!@#$%^&*()-_=+".length : "!@#$%^&*()_+{}[]<>?,./\\|=-".length);
+      const len = typeof opts.length === 'number' ? opts.length : parseInt(document.getElementById("lengthInput").value);
+      if (!charsetSize || isNaN(len) || len <= 0) return 0;
+      return len * Math.log2(charsetSize);
+    }
+
+    function entropyColor(bits) {
+      if (bits >= 80) return 'green';
+      if (bits >= 60) return 'orange';
+      return 'red';
+    }
+
+    function generateBatch() {
+      const count = parseInt(document.getElementById('batchCount').value, 10) || 0;
+      const doUser = document.getElementById('batchUsernames').checked;
+      const doPass = document.getElementById('batchPasswords').checked;
+
+      if (!doUser && !doPass) {
+        document.getElementById('batchOutput').value = 'Select at least username or password.';
+        return;
+      }
+
+      // batch options
+      const batchUsernameMode = document.getElementById('batchUsernameMode') ? document.getElementById('batchUsernameMode').value : undefined;
+      const batchUsernameIncludeNumbers = document.getElementById('batchUsernameIncludeNumbers') ? document.getElementById('batchUsernameIncludeNumbers').checked : true;
+      const batchUsernameNumberCount = document.getElementById('batchUsernameNumberCount') ? parseInt(document.getElementById('batchUsernameNumberCount').value, 10) || 0 : 0;
+
+      const batchPasswordLength = document.getElementById('batchPasswordLength') ? parseInt(document.getElementById('batchPasswordLength').value, 10) : undefined;
+      const batchIncludeUpper = document.getElementById('batchIncludeUpper') ? document.getElementById('batchIncludeUpper').checked : true;
+      const batchIncludeLower = document.getElementById('batchIncludeLower') ? document.getElementById('batchIncludeLower').checked : true;
+      const batchIncludeNumbers = document.getElementById('batchIncludeNumbers') ? document.getElementById('batchIncludeNumbers').checked : true;
+      const batchIncludeSymbols = document.getElementById('batchIncludeSymbols') ? document.getElementById('batchIncludeSymbols').checked : true;
+      const batchMinNumbers = document.getElementById('batchMinNumbers') ? parseInt(document.getElementById('batchMinNumbers').value, 10) || 0 : 0;
+      const batchMinSymbols = document.getElementById('batchMinSymbols') ? parseInt(document.getElementById('batchMinSymbols').value, 10) || 0 : 0;
+      const batchPasswordMode = document.getElementById('batchPasswordMode') ? document.getElementById('batchPasswordMode').value : undefined;
+      const batchPassphraseCount = document.getElementById('batchPassphraseCount') ? parseInt(document.getElementById('batchPassphraseCount').value,10) || 4 : undefined;
+      const batchPassphraseSep = document.getElementById('batchPassphraseSep') ? document.getElementById('batchPassphraseSep').value : '-';
+      const batchPasswordTemplate = document.getElementById('batchPasswordTemplate') ? document.getElementById('batchPasswordTemplate').value : undefined;
+
+      const uniqueOnly = document.getElementById('batchUnique') ? document.getElementById('batchUnique').checked : false;
+      const uniqueAttempts = document.getElementById('batchUniqueAttempts') ? parseInt(document.getElementById('batchUniqueAttempts').value,10) || 50 : 50;
+
+      const includeHeader = document.getElementById('batchIncludeHeader') ? document.getElementById('batchIncludeHeader').checked : true;
+      const includeIndex = document.getElementById('batchIncludeIndex') ? document.getElementById('batchIncludeIndex').checked : false;
+      const includeTs = document.getElementById('batchIncludeTimestamp') ? document.getElementById('batchIncludeTimestamp').checked : false;
+      const csvSep = document.getElementById('batchCsvSep') ? document.getElementById('batchCsvSep').value || ',' : ',';
+
+      // prepare header
+      const headerParts = [];
+      if (includeIndex) headerParts.push('index');
+      if (includeTs) headerParts.push('timestamp');
+      if (doUser) headerParts.push('username');
+      if (doPass) headerParts.push('password');
+
+      const seen = new Set();
+      const rows = [];
+      let skipped = 0;
+      // batch controller for cancel
+      window._batchController = { cancel: false };
+      const startTime = Date.now();
+      const progressEl = document.getElementById('batchProgress');
+      const statusEl = document.getElementById('batchStatus');
+      progressEl.value = 0;
+      statusEl.innerText = 'Generating...';
+
+      const csvEscape = s => '"' + String(s).replace(/"/g,'""') + '"';
+      const batchOutputPattern = document.getElementById('batchOutputPattern') ? document.getElementById('batchOutputPattern').value : 'csv';
+      const batchCustomPattern = document.getElementById('batchCustomPattern') ? document.getElementById('batchCustomPattern').value : '{username}:{password}';
+
+      let i = 0;
+      const chunkSize = Math.max(1, Math.min(500, Math.floor(count/10) || 50));
+
+      function genOne() {
+        const obj = { index: i+1, timestamp: new Date().toISOString(), username: '', password: '' };
+        if (doUser) {
+          obj.username = createUsername({ mode: batchUsernameMode, includeNumbers: batchUsernameIncludeNumbers, numCount: batchUsernameNumberCount });
+        }
+        if (doPass) {
+          obj.password = createPassword({ length: batchPasswordLength, useUpper: batchIncludeUpper, useLower: batchIncludeLower, useNumbers: batchIncludeNumbers, useSymbols: batchIncludeSymbols, minNumbers: batchMinNumbers, minSymbols: batchMinSymbols, mode: batchPasswordMode, passphraseCount: batchPassphraseCount, passphraseSep: batchPassphraseSep, template: batchPasswordTemplate });
+        }
+        return obj;
+      }
+
+      function processChunk() {
+        if (window._batchController && window._batchController.cancel) {
+          statusEl.innerText = `Cancelled at ${i}/${count}`;
+          document.getElementById('batchCancelBtn').style.display = 'none';
+          document.getElementById('batchGenerateBtn').disabled = false;
+          return;
+        }
+        const end = Math.min(count, i + chunkSize);
+        for (; i < end; i++) {
+          let attempts = 0;
+          let obj = genOne();
+          let key = (obj.username || '') + '|' + (obj.password || '');
+          while (uniqueOnly && seen.has(key) && attempts < uniqueAttempts) {
+            obj = genOne();
+            key = (obj.username || '') + '|' + (obj.password || '');
+            attempts++;
+          }
+          if (uniqueOnly && seen.has(key)) {
+            // couldn't produce a unique row for this slot; skip and continue
+            skipped++;
+            continue;
+          }
+          seen.add(key);
+          // format row according to selected pattern
+          if (batchOutputPattern === 'csv') {
+            const parts = [];
+            if (includeIndex) parts.push(obj.index);
+            if (includeTs) parts.push(obj.timestamp);
+            if (doUser) parts.push(csvEscape(obj.username));
+            if (doPass) parts.push(csvEscape(obj.password));
+            rows.push(parts.join(csvSep));
+          } else if (batchOutputPattern === 'json') {
+            rows.push({ index: obj.index, timestamp: obj.timestamp, username: obj.username, password: obj.password });
+          } else if (batchOutputPattern === 'pair_colon') {
+            rows.push((obj.username || '') + ':' + (obj.password || ''));
+          } else if (batchOutputPattern === 'pair_tab') {
+            rows.push((obj.username || '') + '\t' + (obj.password || ''));
+          } else if (batchOutputPattern === 'pair_comma') {
+            rows.push((obj.username || '') + ',' + (obj.password || ''));
+          } else if (batchOutputPattern === 'custom') {
+            const tpl = batchCustomPattern || '{username}:{password}';
+            const line = tpl.replace(/\{username\}/g, obj.username).replace(/\{password\}/g, obj.password).replace(/\{index\}/g, obj.index).replace(/\{timestamp\}/g, obj.timestamp);
+            rows.push(line);
+          } else {
+            // fallback to CSV
+            const parts = [];
+            if (includeIndex) parts.push(obj.index);
+            if (includeTs) parts.push(obj.timestamp);
+            if (doUser) parts.push(csvEscape(obj.username));
+            if (doPass) parts.push(csvEscape(obj.password));
+            rows.push(parts.join(csvSep));
+          }
+          try { saveToHistory({ username: obj.username, password: obj.password, source: 'batch', timestamp: obj.timestamp }); } catch (e) {}
+        }
+        // ETA calculation
+        const now = Date.now();
+        const elapsedMs = Math.max(1, now - startTime);
+        const processed = i;
+        const ratePerMs = processed / elapsedMs;
+        let etaText = '';
+        if (processed > 0 && ratePerMs > 0) {
+          const remaining = Math.max(0, count - processed);
+          const etaMs = Math.round(remaining / ratePerMs);
+          const s = Math.ceil(etaMs / 1000);
+          etaText = `ETA: ${s}s`;
+        }
+        progressEl.value = Math.floor((i / count) * 100);
+        statusEl.innerText = `Generating... ${i}/${count}`;
+        document.getElementById('batchETA').innerText = etaText;
+        document.getElementById('batchSkipped').innerText = skipped ? `Skipped:${skipped}` : '';
+        document.getElementById('batchCancelBtn').style.display = 'inline-block';
+        document.getElementById('batchGenerateBtn').disabled = true;
+        if (i < count) {
+          setTimeout(processChunk, 10);
+        } else {
+          // finished
+          if (batchOutputPattern === 'json') {
+            document.getElementById('batchOutput').value = JSON.stringify(rows, null, 2);
+          } else {
+            const out = [];
+            if (includeHeader) out.push(headerParts.join(csvSep));
+            out.push(...rows);
+            document.getElementById('batchOutput').value = out.join('\n');
+          }
+          progressEl.value = 100;
+          statusEl.innerText = `Done: ${rows.length} rows`;
+          document.getElementById('batchCancelBtn').style.display = 'none';
+          document.getElementById('batchGenerateBtn').disabled = false;
+          document.getElementById('batchETA').innerText = '';
+          document.getElementById('batchSkipped').innerText = skipped ? `Skipped:${skipped}` : '';
+        }
+      }
+
+      // start
+      rows.length = 0;
+      seen.clear();
+      // reset preview/message
+      document.getElementById('batchPreview').style.display = 'none';
+      document.getElementById('batchPatternMsg').innerText = '';
+      window._batchController.cancel = false;
+      setTimeout(processChunk, 10);
+    }
+
+    function cancelBatch() {
+      if (window._batchController) {
+        window._batchController.cancel = true;
+      }
+    }
+
+    function validateCustomPattern(tpl) {
+      if (!tpl) return { ok: true };
+      // allow only these tokens
+      const allowed = ['username','password','index','timestamp'];
+      const re = /\{([^}]+)\}/g;
+      let m;
+      while ((m = re.exec(tpl)) !== null) {
+        if (!allowed.includes(m[1])) return { ok: false, bad: m[1] };
+      }
+      return { ok: true };
+    }
+
+    function generateBatchPreview() {
+      const batchOutputPattern = document.getElementById('batchOutputPattern') ? document.getElementById('batchOutputPattern').value : 'csv';
+      const batchCustomPattern = document.getElementById('batchCustomPattern') ? document.getElementById('batchCustomPattern').value : '{username}:{password}';
+      const v = document.getElementById('batchPatternMsg');
+      v.innerText = '';
+      const val = validateCustomPattern(batchCustomPattern);
+      if (batchOutputPattern === 'custom' && !val.ok) {
+        v.innerText = `Invalid token: {${val.bad}}`;
+        document.getElementById('batchPreview').style.display = 'none';
+        return;
+      }
+      // read same options as generateBatch to produce realistic samples
+      const batchUsernameMode = document.getElementById('batchUsernameMode') ? document.getElementById('batchUsernameMode').value : undefined;
+      const batchUsernameIncludeNumbers = document.getElementById('batchUsernameIncludeNumbers') ? document.getElementById('batchUsernameIncludeNumbers').checked : true;
+      const batchUsernameNumberCount = document.getElementById('batchUsernameNumberCount') ? parseInt(document.getElementById('batchUsernameNumberCount').value, 10) || 0 : 0;
+      const batchPasswordLength = document.getElementById('batchPasswordLength') ? parseInt(document.getElementById('batchPasswordLength').value, 10) : undefined;
+      const batchIncludeUpper = document.getElementById('batchIncludeUpper') ? document.getElementById('batchIncludeUpper').checked : true;
+      const batchIncludeLower = document.getElementById('batchIncludeLower') ? document.getElementById('batchIncludeLower').checked : true;
+      const batchIncludeNumbers = document.getElementById('batchIncludeNumbers') ? document.getElementById('batchIncludeNumbers').checked : true;
+      const batchIncludeSymbols = document.getElementById('batchIncludeSymbols') ? document.getElementById('batchIncludeSymbols').checked : true;
+      const batchMinNumbers = document.getElementById('batchMinNumbers') ? parseInt(document.getElementById('batchMinNumbers').value, 10) || 0 : 0;
+      const batchMinSymbols = document.getElementById('batchMinSymbols') ? parseInt(document.getElementById('batchMinSymbols').value, 10) || 0 : 0;
+      const batchPasswordMode = document.getElementById('batchPasswordMode') ? document.getElementById('batchPasswordMode').value : undefined;
+      const batchPassphraseCount = document.getElementById('batchPassphraseCount') ? parseInt(document.getElementById('batchPassphraseCount').value,10) || 4 : undefined;
+      const batchPassphraseSep = document.getElementById('batchPassphraseSep') ? document.getElementById('batchPassphraseSep').value : '-';
+      const batchPasswordTemplate = document.getElementById('batchPasswordTemplate') ? document.getElementById('batchPasswordTemplate').value : undefined;
+
+      const samples = [];
+      for (let k = 0; k < 3; k++) {
+        const obj = { index: k+1, timestamp: new Date().toISOString(), username: '', password: '' };
+        if (document.getElementById('batchUsernames').checked) {
+          obj.username = createUsername({ mode: batchUsernameMode, includeNumbers: batchUsernameIncludeNumbers, numCount: batchUsernameNumberCount });
+        }
+        if (document.getElementById('batchPasswords').checked) {
+          obj.password = createPassword({ length: batchPasswordLength, useUpper: batchIncludeUpper, useLower: batchIncludeLower, useNumbers: batchIncludeNumbers, useSymbols: batchIncludeSymbols, minNumbers: batchMinNumbers, minSymbols: batchMinSymbols, mode: batchPasswordMode, passphraseCount: batchPassphraseCount, passphraseSep: batchPassphraseSep, template: batchPasswordTemplate });
+        }
+        if (batchOutputPattern === 'json') samples.push({ index: obj.index, timestamp: obj.timestamp, username: obj.username, password: obj.password });
+        else if (batchOutputPattern === 'csv') {
+          const p = [];
+          if (document.getElementById('batchIncludeIndex').checked) p.push(obj.index);
+          if (document.getElementById('batchIncludeTimestamp').checked) p.push(obj.timestamp);
+          if (document.getElementById('batchUsernames').checked) p.push('"'+String(obj.username).replace(/"/g,'""')+'"');
+          if (document.getElementById('batchPasswords').checked) p.push('"'+String(obj.password).replace(/"/g,'""')+'"');
+          samples.push(p.join(document.getElementById('batchCsvSep').value||','));
+        } else if (batchOutputPattern === 'custom') {
+          const tpl = batchCustomPattern || '{username}:{password}';
+          const line = tpl.replace(/\{username\}/g, obj.username).replace(/\{password\}/g, obj.password).replace(/\{index\}/g, obj.index).replace(/\{timestamp\}/g, obj.timestamp);
+          samples.push(line);
+        } else if (batchOutputPattern === 'pair_colon') samples.push((obj.username||'')+':' + (obj.password||''));
+        else if (batchOutputPattern === 'pair_tab') samples.push((obj.username||'')+'\t'+(obj.password||''));
+        else samples.push((obj.username||'')+','+(obj.password||''));
+      }
+      const pre = document.getElementById('batchPreview');
+      pre.textContent = (batchOutputPattern === 'json') ? JSON.stringify(samples, null, 2) : samples.join('\n');
+      pre.style.display = 'block';
+      document.getElementById('batchPatternMsg').innerText = '';
+    }
+
+    function exportBatch() {
+      const data = document.getElementById('batchOutput').value || '';
+      if (!data.trim()) return;
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const format = document.getElementById('exportFormat') ? document.getElementById('exportFormat').value : 'csv';
+      const encrypt = document.getElementById('exportEncrypt') ? document.getElementById('exportEncrypt').checked : false;
+      const passphrase = document.getElementById('exportPassphrase') ? document.getElementById('exportPassphrase').value : '';
+      const fnameBase = `batch_${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+      let blob;
+      if (format === 'json') {
+        // try parse lines as CSV or plain text; keep as simple JSON lines array
+        const lines = data.split('\n').filter(Boolean);
+        blob = new Blob([JSON.stringify({ rows: lines }, null, 2)], { type: 'application/json' });
+      } else if (format === 'oneperline') {
+        blob = new Blob([data], { type: 'text/plain' });
+      } else if (format === 'keepass') {
+        // assume CSV already; just pass through
+        blob = new Blob([data], { type: 'text/csv' });
+      } else {
+        blob = new Blob([data], { type: 'text/csv' });
+      }
+      if (encrypt && passphrase) {
+        encryptBlobWithPassphrase(blob, passphrase).then(encBlob => {
+          downloadBlob(encBlob, fnameBase + '.enc.json');
+        }).catch(() => { alert('Encryption failed'); });
+      } else {
+        downloadBlob(blob, fnameBase + (format === 'json' ? '.json' : (format === 'oneperline' ? '.txt' : '.csv')));
+      }
     }
 
     function toggleTheme() {
@@ -255,6 +1254,79 @@
       body.classList.toggle("dark");
       toggleButton.innerText = body.classList.contains("dark") ? "Toggle Dark/Light" : "Toggle Dark/Light";
     }
+
+    // Settings persistence
+    function saveSettings() {
+      const s = {
+          lengthInput: document.getElementById('lengthInput') ? document.getElementById('lengthInput').value : '',
+          includeUpper: document.getElementById('includeUpper') ? document.getElementById('includeUpper').checked : true,
+          includeLower: document.getElementById('includeLower') ? document.getElementById('includeLower').checked : true,
+          includeNumbers: document.getElementById('includeNumbers') ? document.getElementById('includeNumbers').checked : true,
+          includeSymbols: document.getElementById('includeSymbols') ? document.getElementById('includeSymbols').checked : true,
+          minNumbers: document.getElementById('minNumbers') ? document.getElementById('minNumbers').value : 0,
+          minSymbols: document.getElementById('minSymbols') ? document.getElementById('minSymbols').value : 0,
+          clipboardClearTimeout: 15
+        };
+      try { localStorage.setItem('apg_settings', JSON.stringify(s)); } catch (e) { /* ignore */ }
+    }
+
+    function loadSettings() {
+      try {
+        const raw = localStorage.getItem('apg_settings');
+        if (!raw) return;
+        const s = JSON.parse(raw);
+        if (s.lengthInput && document.getElementById('lengthInput')) document.getElementById('lengthInput').value = s.lengthInput;
+        if (typeof s.includeUpper === 'boolean' && document.getElementById('includeUpper')) document.getElementById('includeUpper').checked = s.includeUpper;
+        if (typeof s.includeLower === 'boolean' && document.getElementById('includeLower')) document.getElementById('includeLower').checked = s.includeLower;
+        if (typeof s.includeNumbers === 'boolean' && document.getElementById('includeNumbers')) document.getElementById('includeNumbers').checked = s.includeNumbers;
+        if (typeof s.includeSymbols === 'boolean' && document.getElementById('includeSymbols')) document.getElementById('includeSymbols').checked = s.includeSymbols;
+        if (s.minNumbers && document.getElementById('minNumbers')) document.getElementById('minNumbers').value = s.minNumbers;
+        if (s.minSymbols && document.getElementById('minSymbols')) document.getElementById('minSymbols').value = s.minSymbols;
+        // clipboard auto-clear removed; ignore these settings if present
+      } catch (e) { /* ignore parse errors */ }
+    }
+
+    function resetSettings() {
+      try { localStorage.removeItem('apg_settings'); } catch (e) { }
+      // sensible defaults
+      if (document.getElementById('lengthInput')) document.getElementById('lengthInput').value = 16;
+      if (document.getElementById('lengthSlider')) document.getElementById('lengthSlider').value = 16;
+      if (document.getElementById('minNumbers')) document.getElementById('minNumbers').value = 3;
+      if (document.getElementById('minSymbols')) document.getElementById('minSymbols').value = 3;
+      if (document.getElementById('includeUpper')) document.getElementById('includeUpper').checked = true;
+      if (document.getElementById('includeLower')) document.getElementById('includeLower').checked = true;
+      if (document.getElementById('includeNumbers')) document.getElementById('includeNumbers').checked = true;
+      if (document.getElementById('includeSymbols')) document.getElementById('includeSymbols').checked = true;
+      if (document.getElementById('usernameNumberCount')) document.getElementById('usernameNumberCount').value = 6;
+      // clear generated values
+      if (document.getElementById('usernameInput')) document.getElementById('usernameInput').value = '';
+      if (document.getElementById('passwordInput')) document.getElementById('passwordInput').value = '';
+      saveSettings();
+      updateControlsState();
+      generateUsername();
+      generatePassword();
+    }
+
+    function exportSettingsToFile() {
+      try {
+        const raw = localStorage.getItem('apg_settings') || '{}';
+        const blob = new Blob([raw], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'apg_settings.json';
+        document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+      } catch (e) { alert('Failed to export settings'); }
+    }
+
+    function importSettingsFromFile(file) {
+      const r = new FileReader();
+      r.onload = function() {
+        try { const txt = r.result; localStorage.setItem('apg_settings', txt); loadSettings(); generatePassword(); generateUsername(); } catch (e) { alert('Invalid settings file'); }
+      };
+      r.readAsText(file);
+    }
+
+    // Plaintext history helpers removed — using protected history helpers above.
 
     // Regenerate password whenever relevant inputs change
     function setupAutoGenerate() {
@@ -265,18 +1337,33 @@
         "includeLower",
         "includeNumbers",
         "includeSymbols",
-        "safeSymbols"
+        "safeSymbols",
+        "minNumbers",
+        "minSymbols"
       ];
       controls.forEach(id => {
-        document.getElementById(id).addEventListener("input", generatePassword);
-        document.getElementById(id).addEventListener("change", generatePassword);
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener("input", () => { generatePassword(); updateControlsState(); });
+        el.addEventListener("change", () => { generatePassword(); updateControlsState(); });
       });
     }
 
     window.onload = function() {
-      const randomLength = Math.floor(Math.random() * (20 - 15 + 1)) + 15;
+      const randomLength = secureRandIntRange(15, 20);
       document.getElementById("lengthInput").value = randomLength;
       document.getElementById("lengthSlider").value = randomLength;
+
+      // Set default random ranges on load:
+      if (document.getElementById("minNumbers")) {
+        document.getElementById("minNumbers").value = secureRandIntRange(3, 5);
+      }
+      if (document.getElementById("minSymbols")) {
+        document.getElementById("minSymbols").value = secureRandIntRange(3, 5);
+      }
+      if (document.getElementById("usernameNumberCount")) {
+        document.getElementById("usernameNumberCount").value = secureRandIntRange(5, 6);
+      }
 
       // Sync slider and input box
       document.getElementById("lengthInput").addEventListener("input", function () {
@@ -293,7 +1380,168 @@
 
       setupAutoGenerate();
       generatePassword();
+      generateUsername();
+
+      // load persisted settings and apply
+      loadSettings();
+      // apply listeners to persist on change
+      const persistIds = ['lengthInput','includeUpper','includeLower','includeNumbers','includeSymbols','minNumbers','minSymbols'];
+      persistIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('change', saveSettings);
+        el.addEventListener('input', saveSettings);
+      });
+
+      // password preview removed
+
+      // show/hide custom batch template input
+      const batchPatternEl = document.getElementById('batchOutputPattern');
+      const batchCustomLabel = document.getElementById('batchCustomPatternLabel');
+      if (batchPatternEl && batchCustomLabel) {
+        const updateVisibility = () => { batchCustomLabel.style.display = (batchPatternEl.value === 'custom') ? 'inline-block' : 'none'; };
+        batchPatternEl.addEventListener('change', updateVisibility);
+        updateVisibility();
+      }
+
+      // History toggle wiring (default off)
+      const histToggle = document.getElementById('historyToggle');
+      const histPanel = document.getElementById('historyPanel');
+      if (histToggle && histPanel) {
+        histToggle.checked = false;
+        histToggle.addEventListener('change', () => {
+          const on = histToggle.checked;
+          histPanel.style.display = on ? 'block' : 'none';
+          if (on) renderHistory();
+          else document.getElementById('clearHistoryBtn').style.display = 'none';
+        });
+      }
+
+      // wire import/export settings UI
+      const expBtn = document.getElementById('exportSettings');
+      if (expBtn) expBtn.addEventListener('click', exportSettingsToFile);
+      const impBtn = document.getElementById('importSettings');
+      const impFile = document.getElementById('importSettingsFile');
+      if (impBtn && impFile) {
+        impBtn.addEventListener('click', () => impFile.click());
+        impFile.addEventListener('change', (e) => { if (e.target.files && e.target.files[0]) importSettingsFromFile(e.target.files[0]); });
+      }
+
+      // password preview removed
+
+      // Wire username controls to auto-generate when changed
+      const unameControls = ["usernameIncludeNumbers", "usernameNumberCount", "usernameMode"];
+      unameControls.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', () => { generateUsername(); updateControlsState(); });
+        el.addEventListener('change', () => { generateUsername(); updateControlsState(); });
+      });
     };
+    // initial control state will be applied after page init
+    // expose actions to window for onclick handlers in attributes
+    try { window.generatePassword = generatePassword; window.generateUsername = generateUsername; } catch (e) {}
+      // attach defensive event listeners to buttons to ensure clicks call handlers
+      function bindButton(selector, fn) {
+        try {
+          const el = document.querySelector(selector);
+          if (el) el.addEventListener('click', async (ev) => { try { await fn(ev); } catch (err) { displayDebug('Click handler error: ' + (err && err.message)); console.error(err); } });
+        } catch (e) { /* ignore */ }
+      }
+      function displayDebug(msg) {
+        const panel = document.getElementById('debugPanel'); if (!panel) return; panel.style.display = 'block'; panel.textContent = msg;
+      }
+      bindButton('#generatePasswordBtn', () => generatePassword());
+      bindButton('#generateUsernameBtn', () => generateUsername());
+      bindButton('#copyButton', () => copyPassword());
+      bindButton('#copyUsernameButton', () => copyUsername());
+      bindButton('#exportButton', () => exportCredentials());
+      bindButton('#batchGenerateBtn', () => generateBatch());
+      bindButton('#batchPreviewBtn', () => generateBatchPreview());
+    
+    // Additional safety: if handlers are missing, provide fallbacks and enable buttons
+    try {
+      if (typeof window.generatePassword !== 'function' && typeof generatePassword === 'function') window.generatePassword = generatePassword;
+    } catch (e) {}
+    try {
+      if (typeof window.generateUsername !== 'function' && typeof generateUsername === 'function') window.generateUsername = generateUsername;
+    } catch (e) {}
+    try {
+      const gpb = document.getElementById('generatePasswordBtn'); if (gpb) gpb.disabled = false;
+      const gub = document.getElementById('generateUsernameBtn'); if (gub) gub.disabled = false;
+    } catch (e) {}
+
+    // password samples removed
+
+    function updateControlsState() {
+      // defensive checks for controls (some elements may be absent)
+      const safeChecked = (id, def = true) => { const el = document.getElementById(id); return el ? !!el.checked : def; };
+      const safeInt = (id, def = 0) => { const el = document.getElementById(id); return el ? (parseInt(el.value,10) || def) : def; };
+      const mode = (document.getElementById('passwordMode') && document.getElementById('passwordMode').value) ? document.getElementById('passwordMode').value : 'random';
+      const useUpper = safeChecked('includeUpper', true);
+      const useLower = safeChecked('includeLower', true);
+      const useNumbers = safeChecked('includeNumbers', true);
+      const useSymbols = safeChecked('includeSymbols', true);
+      const minNumbers = safeInt('minNumbers', 0);
+      const minSymbols = safeInt('minSymbols', 0);
+      const length = safeInt('lengthInput', 16);
+      const pwdOk = (mode !== 'random' || (useUpper || useLower || useNumbers || useSymbols)) && ((minNumbers + minSymbols) <= length);
+      const genPwdBtn = document.getElementById('generatePasswordBtn') || document.querySelector('button[onclick="generatePassword()"]');
+      if (genPwdBtn) genPwdBtn.disabled = !pwdOk;
+
+      // enable/disable export based on presence
+      const exportBtn = document.getElementById('exportButton');
+      if (exportBtn) {
+        const hasUser = (document.getElementById('usernameInput') && document.getElementById('usernameInput').value) || '';
+        const hasPass = (document.getElementById('passwordInput') && document.getElementById('passwordInput').value) || '';
+        exportBtn.disabled = !(hasUser || hasPass);
+      }
+    }
+
+    // Ensure controls are evaluated after page load / init
+    if (document.readyState === 'complete') {
+      try { updateControlsState(); } catch (e) { /* ignore */ }
+    } else {
+      window.addEventListener('load', () => { try { updateControlsState(); } catch (e) { /* ignore */ } });
+    }
+
+    // presets removed per user request
+    // Title rotator / glitch effect
+    (function setupTitleGlitch(){
+      const titles = ['Username Generator','Password Generator','Batch Generator'];
+      const display = document.getElementById('titleDisplay');
+      if (!display) return;
+      let idx = 0;
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}<>?';
+      function glitchTo(text){
+        const steps = 8;
+        let i = 0;
+        const timer = setInterval(()=>{
+          let s = '';
+          for (let j=0;j<text.length;j++){
+            if (Math.random() < (i/steps)) s += text[j];
+            else s += chars.charAt(Math.floor(Math.random()*chars.length));
+          }
+          display.textContent = s;
+          i++;
+          if (i>steps){ clearInterval(timer); display.textContent = text; document.title = text + ' - Generator'; }
+        }, 35);
+      }
+      // start
+      display.textContent = titles[0];
+      document.title = titles[0] + ' - Generator';
+      setInterval(()=>{ idx = (idx+1) % titles.length; glitchTo(titles[idx]); }, 2500);
+    })();
+
+    // Global error handler to surface runtime errors to the debug panel
+    window.addEventListener('error', (ev) => {
+      try {
+        const panel = document.getElementById('debugPanel');
+        panel.style.display = 'block';
+        panel.textContent = `Error: ${ev.message} at ${ev.filename}:${ev.lineno}:${ev.colno}`;
+        console.error(ev.error || ev.message);
+      } catch (e) { console.error('debug display failed', e); }
+    });
   </script>
 </body>
 </html>
