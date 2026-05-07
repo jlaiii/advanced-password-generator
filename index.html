@@ -270,7 +270,26 @@
       .btn { padding: 12px 14px; }
       .card-title { font-size: 14px; }
     }
-  </style>
+  
+    .stepper-wrap { display: inline-flex; align-items: center; gap: 2px; vertical-align: middle; }
+    .stepper-wrap input[type="number"] { width: 56px; text-align: center; border: 1px solid var(--input-border); background: var(--bg-input); color: var(--text-main); border-radius: 8px; padding: 6px 2px; font-size: 14px; outline: none; }
+    .stepper-wrap button { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--input-border); background: var(--bg-input); color: var(--text-main); cursor: pointer; font-size: 16px; line-height: 1; transition: background .15s, border-color .15s; }
+    .stepper-wrap button:hover { background: var(--btn-secondary-bg); border-color: var(--accent); }
+
+    .modern-textarea { width: 100%; min-height: 120px; border: 1px solid var(--input-border); background: var(--bg-input); color: var(--text-main); border-radius: 10px; padding: 12px; font-size: 13px; font-family: ui-monospace, monospace; outline: none; resize: vertical; }
+    .modern-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(2,132,199,0.12); }
+
+    .nested-details { margin-top: 10px; border: 1px solid var(--input-border); border-radius: 10px; padding: 10px 12px; background: rgba(255,255,255,0.03); }
+    body.light .nested-details { background: rgba(0,0,0,0.03); }
+    .nested-details summary { cursor: pointer; font-weight: 700; font-size: 13px; list-style: none; display: flex; align-items: center; gap: 8px; color: var(--accent); }
+    .nested-details summary::before { content: "▸"; display: inline-block; transition: transform .2s; color: var(--accent); font-size: 16px; }
+    .nested-details[open] summary::before { transform: rotate(90deg); }
+    .nested-details .details-body { margin-top: 10px; }
+
+    /* Inline number minify */
+    input[type="number"]#lengthInput { width: 52px; text-align: center; }
+
+</style>
 </head>
 <body class="">
   <div class="app-container">
@@ -295,7 +314,7 @@
       <div class="range-wrap">
         <label for="lengthSlider">Length</label>
         <input type="range" id="lengthSlider" min="8" max="100">
-        <input type="number" id="lengthInput" min="8" max="100" style="width:64px;text-align:center;">
+        <div class="stepper-wrap"><button type="button" aria-label="decrease" onclick="stepNumber('lengthInput', -1)">−</button><input type="number" id="lengthInput" min="8" max="100" style="width:64px;text-align:center;"><button type="button" aria-label="increase" onclick="stepNumber('lengthInput', 1)">+</button></div>
       </div>
 
       <div class="toggle-grid">
@@ -340,11 +359,11 @@
       <div class="field-row" style="gap:16px;">
         <div>
           <label for="minNumbers">Min Numbers</label>
-          <input type="number" id="minNumbers" min="0" max="100" value="3">
+          <div class="stepper-wrap"><button type="button" aria-label="decrease" onclick="stepNumber('minNumbers', -1)">−</button><input type="number" id="minNumbers" min="0" max="100" value="3"><button type="button" aria-label="increase" onclick="stepNumber('minNumbers', 1)">+</button></div>
         </div>
         <div>
           <label for="minSymbols">Min Symbols</label>
-          <input type="number" id="minSymbols" min="0" max="100" value="3">
+          <div class="stepper-wrap"><button type="button" aria-label="decrease" onclick="stepNumber('minSymbols', -1)">−</button><input type="number" id="minSymbols" min="0" max="100" value="3"><button type="button" aria-label="increase" onclick="stepNumber('minSymbols', 1)">+</button></div>
         </div>
         <label id="safeSymbolsLabel" style="display:flex;align-items:center;gap:6px;cursor:pointer;">
           <input type="checkbox" id="safeSymbols" checked> <span style="font-size:13px;color:var(--text-muted);">Safe symbols only</span>
@@ -381,7 +400,7 @@
         </select>
         <label><input type="checkbox" id="usernameIncludeNumbers" checked style="margin-left:4px;"> Include numbers</label>
         <label for="usernameNumberCount">Count</label>
-        <input type="number" id="usernameNumberCount" min="0" max="10" value="6">
+        <div class="stepper-wrap"><button type="button" aria-label="decrease" onclick="stepNumber('usernameNumberCount', -1)">−</button><input type="number" id="usernameNumberCount" min="0" max="10" value="6"><button type="button" aria-label="increase" onclick="stepNumber('usernameNumberCount', 1)">+</button></div>
       </div>
       <button id="generateUsernameBtn" class="btn btn-primary" style="width:100%;justify-content:center;" onclick="generateUsername()">Generate Username</button>
       <div class="output-box" style="margin-top:12px;">
@@ -398,7 +417,7 @@
         <div class="details-body">
           <div class="field-row">
             <label for="batchCount">Count</label>
-            <input type="number" id="batchCount" min="1" max="5000" value="10">
+            <div class="stepper-wrap"><button type="button" aria-label="decrease" onclick="stepNumber('batchCount', -1)">−</button><input type="number" id="batchCount" min="1" max="5000" value="10"><button type="button" aria-label="increase" onclick="stepNumber('batchCount', 1)">+</button></div>
             <label><input type="checkbox" id="batchUsernames" checked> Usernames</label>
             <label><input type="checkbox" id="batchPasswords" checked> Passwords</label>
           </div>
@@ -408,7 +427,7 @@
             <button id="batchPreviewBtn" class="btn btn-secondary" onclick="generateBatchPreview()">Preview (3)</button>
             <button id="batchCancelBtn" class="btn btn-danger hidden" onclick="cancelBatch()">Cancel</button>
           </div>
-          <textarea id="batchOutput" readonly placeholder="Batch output will appear here…"> </textarea>
+          <textarea id="batchOutput" class="modern-textarea" readonly placeholder="Batch output will appear here…"> </textarea>
           <div class="progress-row">
             <progress id="batchProgress" value="0" max="100"></progress>
             <span id="batchStatus" style="min-width:100px;font-size:12px;color:var(--text-muted);">Idle</span>
@@ -420,42 +439,42 @@
 
           <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
             <label><input type="checkbox" id="batchUnique"> Unique rows</label>
-            <label>Attempts <input type="number" id="batchUniqueAttempts" value="50" min="1" style="width:56px;"></label>
+            <label>Attempts <div class="stepper-wrap"><button type="button" aria-label="decrease" onclick="stepNumber('batchUniqueAttempts', -1)">−</button><input type="number" id="batchUniqueAttempts" value="50" min="1" style="width:56px;"><button type="button" aria-label="increase" onclick="stepNumber('batchUniqueAttempts', 1)">+</button></div></label>
             <label><input type="checkbox" id="batchIncludeHeader" checked> Header</label>
             <label><input type="checkbox" id="batchIncludeIndex"> Index</label>
             <label><input type="checkbox" id="batchIncludeTimestamp"> Timestamp</label>
             <label>Sep <input type="text" id="batchCsvSep" value="," maxlength="1" style="width:32px;text-align:center;"></label>
           </div>
 
-          <details style="margin-top:10px;">
+          <details class="nested-details" style="margin-top:10px;">
             <summary style="cursor:pointer;color:var(--accent);font-size:13px;font-weight:600;">Username Options</summary>
             <div class="field-row" style="margin-top:8px;">
               <label>Mode <select id="batchUsernameMode"><option value="words">words</option><option value="words2">words2</option><option value="name_word">name_word</option><option value="anon">anon</option><option value="alphanum">alphanum</option><option value="leet">leet</option><option value="camel">camel</option><option value="initials">initials</option><option value="mixed">mixed</option></select></label>
               <label><input type="checkbox" id="batchUsernameIncludeNumbers" checked> Numbers</label>
-              <label>Count <input type="number" id="batchUsernameNumberCount" value="6" min="0" max="10" style="width:56px;"></label>
+              <label>Count <div class="stepper-wrap"><button type="button" aria-label="decrease" onclick="stepNumber('batchUsernameNumberCount', -1)">−</button><input type="number" id="batchUsernameNumberCount" value="6" min="0" max="10" style="width:56px;"><button type="button" aria-label="increase" onclick="stepNumber('batchUsernameNumberCount', 1)">+</button></div></label>
             </div>
           </details>
-          <details style="margin-top:8px;">
+          <details class="nested-details" style="margin-top:8px;">
             <summary style="cursor:pointer;color:var(--accent);font-size:13px;font-weight:600;">Password Options</summary>
             <div class="field-row" style="margin-top:8px;">
               <label>Mode <select id="batchPasswordMode"><option value="random">Random</option><option value="passphrase">Passphrase</option><option value="pronounceable">Pronounceable</option><option value="template">Template</option></select></label>
-              <label>Words <input type="number" id="batchPassphraseCount" value="4" min="1" max="12" style="width:56px;"></label>
+              <label>Words <div class="stepper-wrap"><button type="button" aria-label="decrease" onclick="stepNumber('batchPassphraseCount', -1)">−</button><input type="number" id="batchPassphraseCount" value="4" min="1" max="12" style="width:56px;"><button type="button" aria-label="increase" onclick="stepNumber('batchPassphraseCount', 1)">+</button></div></label>
               <label>Sep <input type="text" id="batchPassphraseSep" value="-" maxlength="3" style="width:44px;text-align:center;"></label>
               <label>Template <input type="text" id="batchPasswordTemplate" placeholder="Ccll-dd" style="width:110px;"></label>
             </div>
             <div class="field-row">
-              <label>Length <input type="number" id="batchPasswordLength" value="20" min="4" max="256" style="width:56px;"></label>
+              <label>Length <div class="stepper-wrap"><button type="button" aria-label="decrease" onclick="stepNumber('batchPasswordLength', -1)">−</button><input type="number" id="batchPasswordLength" value="20" min="4" max="256" style="width:56px;"><button type="button" aria-label="increase" onclick="stepNumber('batchPasswordLength', 1)">+</button></div></label>
               <label><input type="checkbox" id="batchIncludeUpper" checked> Upper</label>
               <label><input type="checkbox" id="batchIncludeLower" checked> Lower</label>
               <label><input type="checkbox" id="batchIncludeNumbers" checked> Numbers</label>
               <label><input type="checkbox" id="batchIncludeSymbols" checked> Symbols</label>
-              <label>Min Nums <input type="number" id="batchMinNumbers" value="3" min="0" max="10" style="width:44px;"></label>
-              <label>Min Syms <input type="number" id="batchMinSymbols" value="3" min="0" max="10" style="width:44px;"></label>
+              <label>Min Nums <div class="stepper-wrap"><button type="button" aria-label="decrease" onclick="stepNumber('batchMinNumbers', -1)">−</button><input type="number" id="batchMinNumbers" value="3" min="0" max="10" style="width:44px;"><button type="button" aria-label="increase" onclick="stepNumber('batchMinNumbers', 1)">+</button></div></label>
+              <label>Min Syms <div class="stepper-wrap"><button type="button" aria-label="decrease" onclick="stepNumber('batchMinSymbols', -1)">−</button><input type="number" id="batchMinSymbols" value="3" min="0" max="10" style="width:44px;"><button type="button" aria-label="increase" onclick="stepNumber('batchMinSymbols', 1)">+</button></div></label>
             </div>
           </details>
           <div class="field-row" style="margin-top:10px;">
             <label>Output Pattern <select id="batchOutputPattern"><option value="csv">CSV</option><option value="json">JSON</option><option value="pair_colon">user:pass</option><option value="pair_tab">tab</option><option value="pair_comma">comma</option><option value="custom">Custom</option></select></label>
-            <label id="batchCustomPatternLabel" style="display:none;">Template <input id="batchCustomPattern" placeholder="{username}:{password}" style="width:190px;"></label>
+            <label id="batchCustomPatternLabel" style="display:none;border-radius:12px;overflow:hidden;border:1px solid var(--border);">Template <input id="batchCustomPattern" placeholder="{username}:{password}" style="width:190px;"></label>
           </div>
         </div>
       </details>
@@ -483,7 +502,7 @@
           <button id="clearHistoryBtn" class="btn btn-danger btn-sm hidden" onclick="clearHistory()">Clear</button>
         </div>
       </div>
-      <div id="historyPanel" style="display:none;">
+      <div id="historyPanel" style="display:none;border-radius:12px;overflow:hidden;border:1px solid var(--border);">
         <table class="history-table" id="historyTable">
           <thead><tr><th>Time</th><th>Username</th><th>Password</th><th>Source</th><th></th></tr></thead>
           <tbody></tbody>
@@ -501,18 +520,30 @@
       </div>
     </section>
 
-    <p class="footer-note">Advanced Password Generator</p>
+    <p class="footer-note">Made with ☕ by <a href="https://github.com/jlaiii" target="_blank" style="color:var(--text-muted);">jlaiii</a></p>
   </div>
 
   <div id="debugPanel" aria-live="polite" style="position:fixed;bottom:6px;right:6px;background:#111;color:#fff;padding:8px;border-radius:6px;max-width:360px;display:none;z-index:9999;font-size:13px"></div>
 
+
   <script src="script.js"></script>
 
-<script src="script.js"></script>
-
-  <script>
+<script>
     
-    function createPassword(opts = {}) {
+    function stepNumber(id, delta) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      let val = parseInt(el.value, 10) || 0;
+      const min = parseInt(el.getAttribute('data-min'), 10);
+      const max = parseInt(el.getAttribute('data-max'), 10);
+      val += delta;
+      if (!Number.isNaN(min) && val < min) val = min;
+      if (!Number.isNaN(max) && val > max) val = max;
+      el.value = val;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+function createPassword(opts = {}) {
       const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       const lower = "abcdefghijklmnopqrstuvwxyz";
       const numbers = "0123456789";
