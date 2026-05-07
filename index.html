@@ -1,356 +1,431 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Advanced Password Generator</title>
   <style>
+    :root {
+      --bg-body: #0b0f19;
+      --bg-card: #111827;
+      --bg-input: #0b1221;
+      --border: #1f2937;
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #818cf8;
+      --success: #34d399;
+      --danger: #f87171;
+      --warning: #fbbf24;
+    }
+    * { box-sizing: border-box; }
     body {
-      font-family: Arial, sans-serif;
-      max-width: 500px;
-      margin: 40px auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    label {
-      display: block;
-      margin: 10px 0 5px;
-    }
-
-    .checkbox-group {
-      margin: 8px 0;
-    }
-
-    #safeSymbolsLabel {
-      font-weight: normal;
-      color: inherit;
-    }
-
-    #passwordBox {
-      display: flex;
-      align-items: center;
-      margin-top: 15px;
-    }
-
-    #passwordInput {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #999;
-      border-radius: 5px;
-      margin-right: 8px;
-    }
-
-    #copyButton,
-    .github-button,
-    #themeToggle,
-    #lengthInput {
-      cursor: pointer;
-      font-size: 16px;
-      padding: 8px 12px;
-      border: none;
-      background: #eee;
-      border-radius: 5px;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    #lengthInput {
-      width: 60px;
-      text-align: center;
-      -moz-appearance: textfield;
-    }
-
-    #lengthInput::-webkit-inner-spin-button,
-    #lengthInput::-webkit-outer-spin-button {
-      -webkit-appearance: none;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(1200px 800px at 10% -10%, #1e293b 0%, transparent 60%),
+                  radial-gradient(1000px 700px at 90% 10%, #111827 0%, transparent 60%),
+                  var(--bg-body);
+      color: var(--text-main);
       margin: 0;
+      padding: 24px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
     }
-
-    #copyMessage {
-      color: green;
-      margin-top: 10px;
-      height: 20px;
-      opacity: 0;
-      transition: opacity 0.5s ease;
-    }
-
-    .footer-container {
+    .app-container {
+      width: 100%;
+      max-width: 800px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      margin-top: 40px;
-      gap: 10px;
+      gap: 20px;
     }
-
-    body.dark {
-      background-color: #1e1e1e;
-      color: #f0f0f0;
-      border-color: #444;
-    }
-
-    body.dark input,
-    body.dark #passwordInput,
-    body.dark #lengthSlider {
-      background-color: #2c2c2c;
-      color: #fff;
-      border-color: #666;
-    }
-
-    body.dark #copyButton,
-    body.dark .github-button,
-    body.dark #themeToggle,
-    body.dark #lengthInput {
-      background: #444;
-      color: #fff;
-    }
-
-    body.dark #copyMessage {
-      color: #90ee90;
-    }
-
-    .length-controls {
+    header {
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      padding-bottom: 8px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid; place-items: center; font-size: 22px; color: #fff; font-weight: 700;
+    }
+    .brand h1 {
+      margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+      background: linear-gradient(90deg, var(--text-main), var(--text-muted));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .brand p { margin: 2px 0 0; font-size: 13px; color: var(--text-muted); }
+    .btn {
+      border: none; border-radius: 10px; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff; box-shadow: 0 4px 14px rgba(56,189,248,0.25);
+    }
+    .btn-primary:hover { box-shadow: 0 6px 20px rgba(56,189,248,0.35); }
+    .btn-secondary {
+      background: var(--border); color: var(--text-main);
+      border: 1px solid #374151;
+    }
+    .btn-secondary:hover { background: #1f2937; }
+    .btn-danger { background: #450a0a; color: var(--danger); border: 1px solid #7f1d1d; }
+    .btn-danger:hover { background: #7f1d1d; color: #fff; }
+    .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 8px; }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    .card-title {
+      margin: 0 0 16px; font-size: 16px; font-weight: 700;
+      display: flex; align-items: center; gap: 8px; color: var(--text-main);
+    }
+    .card-title .emoji { font-size: 20px; }
+
+    .field-row {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 14px;
+    }
+    .field-row label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+    .field-row input[type="number"], .field-row input[type="text"], .field-row input[type="password"], .field-row select, .field-row textarea {
+      background: var(--bg-input);
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      color: var(--text-main);
+      padding: 8px 12px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .field-row input:focus, .field-row select:focus, .field-row textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
+    }
+    .field-row input[type="number"] { width: 70px; text-align: center; }
+    .field-row input[type="text"], .field-row input[type="password"] { min-width: 140px; }
+    .field-row select { min-width: 160px; }
+    .field-row textarea { width: 100%; min-height: 140px; resize: vertical; }
+
+    .output-box {
+      display: flex; gap: 10px; align-items: stretch; margin-top: 12px;
+    }
+    .output-box input {
+      flex: 1;
+      background: #0b1221;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 18px;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      color: var(--accent);
+      outline: none;
+    }
+    .output-box .btn { border-radius: 12px; }
+
+    .copy-msg {
+      margin-top: 10px; min-height: 20px; font-size: 13px; font-weight: 600;
+      opacity: 0; transition: opacity .4s ease;
+    }
+    .copy-msg.show { opacity: 1; }
+
+    .toggle-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 10px;
-      margin-bottom: 10px;
+      margin: 10px 0 14px;
+    }
+    .toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #0b1221; border: 1px solid #1f2937; border-radius: 10px;
+      padding: 10px 12px; cursor: pointer; user-select: none;
+      transition: border-color .2s;
+    }
+    .toggle:hover { border-color: #334155; }
+    .toggle-left { display: flex; align-items: center; gap: 10px; }
+    .toggle-left span { font-size: 18px; }
+    .toggle-left div { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+    .switch {
+      position: relative; width: 40px; height: 22px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background: #334155; border-radius: 22px; transition: .2s;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+      background: #fff; border-radius: 50%; transition: .2s;
+    }
+    .switch input:checked + .slider { background: var(--accent); }
+    .switch input:checked + .slider:before { transform: translateX(18px); }
+
+    .range-wrap {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 14px;
+    }
+    .range-wrap label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+    input[type=range] {
+      -webkit-appearance: none; flex: 1; height: 6px; background: #1f2937; border-radius: 6px; outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent); border-radius: 50%; cursor: pointer;
+      box-shadow: 0 0 0 4px rgba(56,189,248,0.15);
+      transition: box-shadow .2s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 6px rgba(56,189,248,0.25); }
+    input[type=range]::-moz-range-thumb {
+      width: 18px; height: 18px; background: var(--accent); border-radius: 50%; cursor: pointer; border: none;
     }
 
-    #lengthSlider {
-      flex: 1;
+    .hint { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .warning { color: var(--danger); font-weight: 700; min-height: 18px; margin-top: 8px; }
+    .success-text { color: var(--success); }
+
+    .progress-row { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+    progress { flex: 1; height: 8px; border-radius: 8px; }
+    progress::-webkit-progress-bar { background: #1f2937; border-radius: 8px; }
+    progress::-webkit-progress-value { background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 8px; }
+
+    .footer-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 6px; }
+
+    .history-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .history-table th { text-align: left; padding: 8px; color: var(--text-muted); border-bottom: 1px solid #1f2937; }
+    .history-table td { padding: 8px; border-bottom: 1px solid #0f172a; font-family: ui-monospace, monospace; }
+
+    .details-card summary {
+      cursor: pointer; font-weight: 700; font-size: 14px; list-style: none; display: flex; align-items: center; gap: 8px;
     }
-    .section-divider {
-      border: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, #ccc, transparent);
-      margin: 18px 0;
+    .details-card summary::before {
+      content: "▸"; display: inline-block; transition: transform .2s; color: var(--accent); font-size: 16px;
     }
-    .divider-label {
-      text-align: center;
-      font-size: 12px;
-      color: #666;
-      margin: -12px 0 8px;
-    }
+    .details-card[open] summary::before { transform: rotate(90deg); }
+    .details-card .details-body { margin-top: 14px; }
+
+    .hidden { display: none !important; }
   </style>
 </head>
-<body class="dark">
-  <h2><span id="titleDisplay">Username / Password / Batch Generator</span></h2>
-  <div style="margin-top:20px;">
-    <h3>Username Generator</h3>
-    <div class="checkbox-group">
-      <label><input type="checkbox" id="usernameIncludeNumbers" checked> Include Numbers</label>
-    </div>
-
-    <div class="checkbox-group">
-      <label for="usernameMode">Mode:</label>
-      <select id="usernameMode">
-        <option value="mixed">Mixed (names/words/anon/random)</option>
-        <option value="names">Common Names</option>
-        <option value="words" selected>Common Words + Number (default)</option>
-        <option value="words2">Two Words + Number</option>
-        <option value="name_word">Name + Word</option>
-        <option value="anon">Anonymous (prefix+digits)</option>
-        <option value="alphanum">Random Alphanumeric</option>
-        <option value="leet">Leet Word + Number</option>
-        <option value="camel">CamelCase Words</option>
-        <option value="initials">Initials + Number</option>
-      </select>
-    </div>
-
-    <div class="checkbox-group">
-      <label for="usernameNumberCount">Numbers Count:</label>
-      <input type="number" id="usernameNumberCount" min="0" max="10" value="6" />
-    </div>
-
-    <button id="generateUsernameBtn" class="github-button" onclick="generateUsername()">Generate Username</button>
-
-    <div id="usernameBox" style="margin-top:10px; display:flex; align-items:center;">
-      <input type="text" id="usernameInput" readonly placeholder="Generated username"
-             style="flex:1; padding:10px; font-size:16px; border:1px solid #999; border-radius:5px; margin-right:8px;">
-      <button id="copyUsernameButton" onclick="copyUsername()">Copy</button>
-    </div>
-    <p id="usernameCopyMessage"></p>
-    <!-- Username samples and presets removed per user request -->
-  </div>
-
-  <hr class="section-divider" aria-hidden="true" />
-  <div class="divider-label">Password Generator</div>
-
-  
-
-  <details id="passwordOptions">
-    <summary style="cursor:pointer; font-weight:bold;">Password Options</summary>
-    <div class="length-controls">
-      <label for="lengthInput">Password Length:</label>
-      <input type="number" id="lengthInput" min="8" max="100" />
-      <input type="range" id="lengthSlider" min="8" max="100" />
-    </div>
-
-    <div class="checkbox-group">
-      <label><input type="checkbox" id="includeUpper" checked> Include Uppercase Letters</label>
-      <label><input type="checkbox" id="includeLower" checked> Include Lowercase Letters</label>
-      <label><input type="checkbox" id="includeNumbers" checked> Include Numbers</label>
-      <label><input type="checkbox" id="includeSymbols" checked> Include Symbols</label>
-      <label id="safeSymbolsLabel">
-        <input type="checkbox" id="safeSymbols" checked> Use Only Safe Symbols
-      </label>
-    </div>
-
-    <div class="checkbox-group">
-      <label for="minNumbers">Minimum Numbers (eg. 3):</label>
-      <input type="number" id="minNumbers" min="0" max="100" value="3" />
-
-      <label for="minSymbols">Minimum Symbols (eg. 3):</label>
-      <input type="number" id="minSymbols" min="0" max="100" value="3" />
-    </div>
-  </details>
-  <!-- Password mode, template, and entropy display removed per user request -->
-  <p id="passwordWarning" style="color:darkred;font-weight:bold;min-height:18px;margin-top:8px;"></p>
-  <!-- Password preview removed per user request -->
-
-  <!-- Word/Name theme selector removed per user request -->
-
-  <!-- Password samples section removed -->
-  <button id="generatePasswordBtn" class="github-button" onclick="generatePassword()">Generate Password</button>
-
-  <div id="passwordBox">
-    <input type="text" id="passwordInput" readonly placeholder="Your password will appear here">
-    <button id="copyButton" onclick="copyPassword()">Copy</button>
-  </div>
-  <div id="singleExport" style="margin-top:12px;border:1px solid #eee;padding:10px;border-radius:6px;background:rgba(255,255,255,0.02);">
-    <label for="exportFormat">Export Format:</label>
-    <select id="exportFormat" style="margin-left:6px;">
-      <option value="csv">CSV</option>
-      <option value="json">JSON</option>
-      <option value="oneperline">One-per-line</option>
-      <option value="keepass">KeePass CSV</option>
-    </select>
-    <label style="margin-left:8px;"><input type="checkbox" id="exportEncrypt"> Encrypt export</label>
-    <input type="password" id="exportPassphrase" placeholder="Passphrase (for encryption)" style="width:200px;margin-left:6px;" />
-    <button id="exportButton" onclick="exportCredentials()" class="github-button" style="margin-left:8px;">Export Username & Password</button>
-  </div>
-  <div style="margin-top:10px;">
-    <label><input type="checkbox" id="historyToggle"> Show Generation History</label>
-    <label style="margin-left:8px;"><input type="checkbox" id="historyEncrypt"> Encrypt History</label>
-    <input type="password" id="historyPassphrase" placeholder="History passphrase" style="width:200px;margin-left:6px;display:none;" />
-    <button class="github-button" id="clearHistoryBtn" style="margin-left:8px;display:none;" onclick="clearHistory()">Clear History</button>
-  </div>
-  <div id="historyPanel" style="display:none;margin-top:10px;border:1px solid #444;padding:8px;border-radius:6px;background:#0f0f0f;color:#ddd;max-height:240px;overflow:auto;">
-    <table id="historyTable" style="width:100%;border-collapse:collapse;font-family:monospace;font-size:13px;">
-      <thead><tr><th style="text-align:left">Time</th><th style="text-align:left">Username</th><th style="text-align:left">Password</th><th style="text-align:left">Source</th><th></th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </div>
-  
-  <p id="copyMessage"></p>
-  <!-- Batch generator: generate multiple username/password pairs -->
-  <div style="margin-top:20px; border-top:1px dashed #ccc; padding-top:12px;">
-    <h3>Batch Generator</h3>
-    <div class="checkbox-group">
-      <label for="batchCount">Count:</label>
-        <input type="number" id="batchCount" min="1" max="5000" value="10" style="width:80px;" />
-      <label><input type="checkbox" id="batchUsernames" checked> Generate Usernames</label>
-      <label><input type="checkbox" id="batchPasswords" checked> Generate Passwords</label>
-    </div>
-    <!-- Options Level removed per user request -->
-      <div class="checkbox-group">
-      <button class="github-button" id="batchGenerateBtn" onclick="generateBatch()">Generate Batch</button>
-      <button class="github-button" id="batchExportBtn" onclick="exportBatch()">Export Batch (CSV)</button>
-      <button class="github-button" id="batchCancelBtn" style="display:none;" onclick="cancelBatch()">Cancel</button>
-      <button class="github-button" id="batchPreviewBtn" onclick="generateBatchPreview()">Preview (3)</button>
-    </div>
-    <div style="margin-top:8px;">
-        <textarea id="batchOutput" readonly style="width:100%;height:200px;font-family:monospace;white-space:pre;"> </textarea>
-        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          <label><input type="checkbox" id="batchUnique"> Ensure Unique Rows</label>
-          <label>Attempts: <input type="number" id="batchUniqueAttempts" value="50" min="1" style="width:80px;"/></label>
-          <label><input type="checkbox" id="batchIncludeHeader" checked> Include Header</label>
-          <label><input type="checkbox" id="batchIncludeIndex"> Include Index</label>
-          <label><input type="checkbox" id="batchIncludeTimestamp"> Include Timestamp</label>
-          <label>CSV Sep: <input type="text" id="batchCsvSep" value="," maxlength="1" style="width:40px;"/></label>
+<body>
+  <div class="app-container">
+    <header>
+      <div class="brand">
+        <div class="brand-icon">🔐</div>
+        <div>
+          <h1>Advanced Password Generator</h1>
+          <p>Secure • Fast • Customizable</p>
         </div>
-        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
-          <progress id="batchProgress" value="0" max="100" style="flex:1;min-width:120px;"></progress>
-          <span id="batchStatus" style="min-width:160px;">Idle</span>
-          <span id="batchETA" style="min-width:140px;color:#666;text-align:right"></span>
-          <span id="batchSkipped" style="min-width:120px;color:darkred;margin-left:8px"></span>
-        </div>
-        <div style="margin-top:8px;">
-          <div id="batchPatternMsg" style="color:darkred;min-height:18px"></div>
-          <pre id="batchPreview" style="background:#111;color:#eee;padding:8px;display:none;max-height:160px;overflow:auto;margin-top:8px;"></pre>
-        </div>
-        <details>
-          <summary>Username Options</summary>
-          <label>Mode:
-            <select id="batchUsernameMode">
-              <option value="words">words</option>
-              <option value="words2">words2</option>
-              <option value="name_word">name_word</option>
-              <option value="anon">anon</option>
-              <option value="alphanum">alphanum</option>
-              <option value="leet">leet</option>
-              <option value="camel">camel</option>
-              <option value="initials">initials</option>
-              <option value="mixed">mixed</option>
-            </select>
-          </label>
-          <label>Include Numbers: <input type="checkbox" id="batchUsernameIncludeNumbers" checked></label>
-          <label>Number Count: <input type="number" id="batchUsernameNumberCount" value="6" min="0" max="10"></label>
-        </details>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button id="themeToggle" class="btn btn-secondary btn-sm" onclick="toggleTheme()">🌗 Toggle</button>
+        <a href="https://github.com/jlaiii/advanced-password-generator" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none;">⭐ GitHub</a>
+      </div>
+    </header>
 
-        <details>
-          <summary>Password Options</summary>
-          <label for="batchPasswordMode">Mode:</label>
-          <select id="batchPasswordMode">
-            <option value="random">Random (charset)</option>
-            <option value="passphrase">Passphrase (words)</option>
-            <option value="pronounceable">Pronounceable</option>
-            <option value="template">Template</option>
-          </select>
-          <div style="margin-top:6px;">
-            <label>Words Count: <input type="number" id="batchPassphraseCount" value="4" min="1" max="12" style="width:80px;"/></label>
-            <label>Separator: <input type="text" id="batchPassphraseSep" value="-" maxlength="3" style="width:60px;"/></label>
-            <label>Template: <input type="text" id="batchPasswordTemplate" placeholder="Ccll-dd" style="width:140px;"/></label>
+    <!-- PASSWORD GENERATOR -->
+    <section class="card">
+      <div class="card-title"><span class="emoji">🛡️</span> Password Generator</div>
+
+      <div class="range-wrap">
+        <label for="lengthSlider">Length</label>
+        <input type="range" id="lengthSlider" min="8" max="100">
+        <input type="number" id="lengthInput" min="8" max="100" style="width:70px;text-align:center;">
+      </div>
+
+      <div class="toggle-grid">
+        <label class="toggle">
+          <div class="toggle-left"><span>🔠</span><div>Uppercase</div></div>
+          <label class="switch"><input type="checkbox" id="includeUpper" checked><span class="slider"></span></label>
+        </label>
+        <label class="toggle">
+          <div class="toggle-left"><span>🔡</span><div>Lowercase</div></div>
+          <label class="switch"><input type="checkbox" id="includeLower" checked><span class="slider"></span></label>
+        </label>
+        <label class="toggle">
+          <div class="toggle-left"><span>🔢</span><div>Numbers</div></div>
+          <label class="switch"><input type="checkbox" id="includeNumbers" checked><span class="slider"></span></label>
+        </label>
+        <label class="toggle">
+          <div class="toggle-left"><span>⚡</span><div>Symbols</div></div>
+          <label class="switch"><input type="checkbox" id="includeSymbols" checked><span class="slider"></span></label>
+        </label>
+      </div>
+
+      <div class="field-row" style="gap:20px;">
+        <div>
+          <label for="minNumbers">Min Numbers</label>
+          <input type="number" id="minNumbers" min="0" max="100" value="3">
+        </div>
+        <div>
+          <label for="minSymbols">Min Symbols</label>
+          <input type="number" id="minSymbols" min="0" max="100" value="3">
+        </div>
+        <label id="safeSymbolsLabel" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="safeSymbols" checked> <span style="font-size:13px;color:var(--text-muted);">Safe symbols only</span>
+        </label>
+      </div>
+
+      <p id="passwordWarning" class="warning"></p>
+
+      <button id="generatePasswordBtn" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;font-size:16px;" onclick="generatePassword()">⚡ Generate Password</button>
+
+      <div class="output-box">
+        <input type="text" id="passwordInput" readonly placeholder="Your password will appear here">
+        <button id="copyButton" class="btn btn-secondary" onclick="copyPassword()">📋 Copy</button>
+      </div>
+      <p id="copyMessage" class="copy-msg"></p>
+    </section>
+
+    <!-- USERNAME GENERATOR -->
+    <section class="card">
+      <div class="card-title"><span class="emoji">👤</span> Username Generator</div>
+      <div class="field-row">
+        <label for="usernameMode">Mode</label>
+        <select id="usernameMode">
+          <option value="mixed">Mixed</option>
+          <option value="names">Common Names</option>
+          <option value="words" selected>Common Word + Number</option>
+          <option value="words2">Two Words + Number</option>
+          <option value="name_word">Name + Word</option>
+          <option value="anon">Anonymous</option>
+          <option value="alphanum">Alphanumeric</option>
+          <option value="leet">Leet Word</option>
+          <option value="camel">CamelCase</option>
+          <option value="initials">Initials + Number</option>
+        </select>
+        <label><input type="checkbox" id="usernameIncludeNumbers" checked style="margin-left:6px;"> Include numbers</label>
+        <label for="usernameNumberCount">Count</label>
+        <input type="number" id="usernameNumberCount" min="0" max="10" value="6">
+      </div>
+      <button id="generateUsernameBtn" class="btn btn-primary" style="width:100%;justify-content:center;" onclick="generateUsername()">👤 Generate Username</button>
+      <div class="output-box" style="margin-top:12px;">
+        <input type="text" id="usernameInput" readonly placeholder="Generated username">
+        <button id="copyUsernameButton" class="btn btn-secondary" onclick="copyUsername()">📋 Copy</button>
+      </div>
+      <p id="usernameCopyMessage" class="copy-msg"></p>
+    </section>
+
+    <!-- BATCH GENERATOR -->
+    <section class="card details-card" id="batchCard">
+      <details>
+        <summary><span class="emoji">🚀</span> Batch Generator</summary>
+        <div class="details-body">
+          <div class="field-row">
+            <label for="batchCount">Count</label>
+            <input type="number" id="batchCount" min="1" max="5000" value="10">
+            <label><input type="checkbox" id="batchUsernames" checked> Usernames</label>
+            <label><input type="checkbox" id="batchPasswords" checked> Passwords</label>
           </div>
-          <label>Length: <input type="number" id="batchPasswordLength" value="20" min="4" max="256"></label>
-          <label><input type="checkbox" id="batchIncludeUpper" checked> Include Upper</label>
-          <label><input type="checkbox" id="batchIncludeLower" checked> Include Lower</label>
-          <label><input type="checkbox" id="batchIncludeNumbers" checked> Include Numbers</label>
-          <label><input type="checkbox" id="batchIncludeSymbols" checked> Include Symbols</label>
-          <label data-level="advanced">Min Numbers: <input type="number" id="batchMinNumbers" value="3" min="0" max="10"></label>
-          <label data-level="advanced">Min Symbols: <input type="number" id="batchMinSymbols" value="3" min="0" max="10"></label>
-        </details>
-        <div style="margin-top:8px;">
-          <label>Batch Output Pattern: 
-            <select id="batchOutputPattern" style="margin-left:6px;">
-              <option value="csv">CSV (columns)</option>
-              <option value="json">JSON (array)</option>
-              <option value="pair_colon">username:password</option>
-              <option value="pair_tab">username\tpassword</option>
-              <option value="pair_comma">username,password</option>
-              <option value="custom">Custom template</option>
-            </select>
-          </label>
-          <label id="batchCustomPatternLabel" style="display:none; margin-left:8px;">Template: <input id="batchCustomPattern" placeholder="{username}:{password}" style="width:200px;" /></label>
+          <div class="field-row" style="gap:10px;">
+            <button id="batchGenerateBtn" class="btn btn-primary" onclick="generateBatch()">Generate Batch</button>
+            <button id="batchExportBtn" class="btn btn-secondary" onclick="exportBatch()">Export CSV</button>
+            <button id="batchPreviewBtn" class="btn btn-secondary" onclick="generateBatchPreview()">Preview (3)</button>
+            <button id="batchCancelBtn" class="btn btn-danger hidden" onclick="cancelBatch()">Cancel</button>
+          </div>
+          <textarea id="batchOutput" readonly placeholder="Batch output will appear here…"> </textarea>
+          <div class="progress-row">
+            <progress id="batchProgress" value="0" max="100"></progress>
+            <span id="batchStatus" style="min-width:120px;font-size:12px;color:var(--text-muted);">Idle</span>
+            <span id="batchETA" style="min-width:100px;font-size:12px;color:var(--text-muted);text-align:right;"></span>
+            <span id="batchSkipped" style="min-width:100px;font-size:12px;color:var(--danger);text-align:right;"></span>
+          </div>
+          <div id="batchPatternMsg" class="warning" style="margin-top:6px;"></div>
+          <pre id="batchPreview" style="display:none;background:#0b1221;padding:10px;border-radius:10px;overflow:auto;margin-top:8px;"></pre>
+
+          <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+            <label><input type="checkbox" id="batchUnique"> Unique rows</label>
+            <label>Attempts <input type="number" id="batchUniqueAttempts" value="50" min="1" style="width:60px;"></label>
+            <label><input type="checkbox" id="batchIncludeHeader" checked> Header</label>
+            <label><input type="checkbox" id="batchIncludeIndex"> Index</label>
+            <label><input type="checkbox" id="batchIncludeTimestamp"> Timestamp</label>
+            <label>Sep <input type="text" id="batchCsvSep" value="," maxlength="1" style="width:36px;text-align:center;"></label>
+          </div>
+
+          <details style="margin-top:12px;">
+            <summary style="cursor:pointer;color:var(--accent);font-size:13px;font-weight:600;">Username Options</summary>
+            <div class="field-row" style="margin-top:8px;">
+              <label>Mode <select id="batchUsernameMode"><option value="words">words</option><option value="words2">words2</option><option value="name_word">name_word</option><option value="anon">anon</option><option value="alphanum">alphanum</option><option value="leet">leet</option><option value="camel">camel</option><option value="initials">initials</option><option value="mixed">mixed</option></select></label>
+              <label><input type="checkbox" id="batchUsernameIncludeNumbers" checked> Numbers</label>
+              <label>Count <input type="number" id="batchUsernameNumberCount" value="6" min="0" max="10" style="width:60px;"></label>
+            </div>
+          </details>
+          <details style="margin-top:10px;">
+            <summary style="cursor:pointer;color:var(--accent);font-size:13px;font-weight:600;">Password Options</summary>
+            <div class="field-row" style="margin-top:8px;">
+              <label>Mode <select id="batchPasswordMode"><option value="random">Random</option><option value="passphrase">Passphrase</option><option value="pronounceable">Pronounceable</option><option value="template">Template</option></select></label>
+              <label>Words <input type="number" id="batchPassphraseCount" value="4" min="1" max="12" style="width:60px;"></label>
+              <label>Sep <input type="text" id="batchPassphraseSep" value="-" maxlength="3" style="width:50px;text-align:center;"></label>
+              <label>Template <input type="text" id="batchPasswordTemplate" placeholder="Ccll-dd" style="width:120px;"></label>
+            </div>
+            <div class="field-row">
+              <label>Length <input type="number" id="batchPasswordLength" value="20" min="4" max="256" style="width:60px;"></label>
+              <label><input type="checkbox" id="batchIncludeUpper" checked> Upper</label>
+              <label><input type="checkbox" id="batchIncludeLower" checked> Lower</label>
+              <label><input type="checkbox" id="batchIncludeNumbers" checked> Numbers</label>
+              <label><input type="checkbox" id="batchIncludeSymbols" checked> Symbols</label>
+              <label>Min Nums <input type="number" id="batchMinNumbers" value="3" min="0" max="10" style="width:50px;"></label>
+              <label>Min Syms <input type="number" id="batchMinSymbols" value="3" min="0" max="10" style="width:50px;"></label>
+            </div>
+          </details>
+          <div class="field-row" style="margin-top:12px;">
+            <label>Output Pattern <select id="batchOutputPattern"><option value="csv">CSV</option><option value="json">JSON</option><option value="pair_colon">user:pass</option><option value="pair_tab">tab</option><option value="pair_comma">comma</option><option value="custom">Custom</option></select></label>
+            <label id="batchCustomPatternLabel" style="display:none;">Template <input id="batchCustomPattern" placeholder="{username}:{password}" style="width:200px;"></label>
+          </div>
         </div>
-    </div>
+      </details>
+    </section>
+
+    <!-- EXPORT SINGLE -->
+    <section class="card">
+      <div class="card-title"><span class="emoji">📦</span> Export Current Pair</div>
+      <div class="field-row">
+        <label>Format <select id="exportFormat"><option value="csv">CSV</option><option value="json">JSON</option><option value="oneperline">One-per-line</option><option value="keepass">KeePass CSV</option></select></label>
+        <label><input type="checkbox" id="exportEncrypt"> Encrypt</label>
+        <input type="password" id="exportPassphrase" placeholder="Passphrase" style="width:180px;">
+        <button id="exportButton" class="btn btn-secondary" onclick="exportCredentials()">Export</button>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="card-title" style="margin:0;"><span class="emoji">📜</span> History</div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <label style="font-size:13px;color:var(--text-muted);"><input type="checkbox" id="historyToggle"> Show</label>
+          <label style="font-size:13px;color:var(--text-muted);"><input type="checkbox" id="historyEncrypt"> Encrypt</label>
+          <input type="password" id="historyPassphrase" placeholder="Passphrase" style="width:160px;display:none;">
+          <button id="clearHistoryBtn" class="btn btn-danger btn-sm hidden" onclick="clearHistory()">Clear</button>
+        </div>
+      </div>
+      <div id="historyPanel" style="display:none;">
+        <table class="history-table" id="historyTable">
+          <thead><tr><th>Time</th><th>Username</th><th>Password</th><th>Source</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <section class="card" style="padding:16px 24px;">
+      <div class="footer-actions">
+        <button id="exportSettings" class="btn btn-secondary btn-sm">Export Settings</button>
+        <input type="file" id="importSettingsFile" style="display:none;" accept="application/json">
+        <button id="importSettings" class="btn btn-secondary btn-sm">Import Settings</button>
+        <button id="resetDefaults" class="btn btn-danger btn-sm" onclick="resetSettings()">Reset Defaults</button>
+      </div>
+    </section>
+
+    <p style="text-align:center;font-size:12px;color:var(--text-muted);margin:8px 0 24px;">Made with ☕ by jlaiii</p>
   </div>
 
-  <div class="footer-container">
-    <!-- Export controls moved to single-export area under Password Generator -->
-    <button id="exportSettings" class="github-button">Export Settings</button>
-    <input type="file" id="importSettingsFile" style="display:none;" accept="application/json" />
-    <button id="importSettings" class="github-button">Import Settings</button>
-    <button id="resetDefaults" class="github-button" onclick="resetSettings()" style="margin-top:8px;background:#f8d7da;color:#721c24;">Reset To Defaults</button>
-  </div>
-
-  <hr style="margin-top:20px;border:0;height:1px;background:linear-gradient(90deg,transparent,#ccc,transparent)">
-  <div style="text-align:center;margin-top:12px;padding-top:8px;">
-    <button id="themeToggle" onclick="toggleTheme()">Toggle Dark/Light</button>
-    <a href="https://github.com/jlaiii/advanced-password-generator" target="_blank" class="github-button" style="margin-left:12px;">See GitHub Project</a>
-  </div>
-
-  <div id="debugPanel" aria-live="polite" style="position:fixed;bottom:6px;right:6px;background:#222;color:#fff;padding:8px;border-radius:6px;max-width:360px;display:none;z-index:9999;font-size:13px"></div>
+  <div id="debugPanel" aria-live="polite" style="position:fixed;bottom:6px;right:6px;background:#111;color:#fff;padding:8px;border-radius:6px;max-width:360px;display:none;z-index:9999;font-size:13px"></div>
 
   <script src="script.js"></script>
 
