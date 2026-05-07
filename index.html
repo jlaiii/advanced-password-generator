@@ -275,6 +275,9 @@
     .stepper-wrap input[type="number"] { width: 56px; text-align: center; border: 1px solid var(--input-border); background: var(--bg-input); color: var(--text-main); border-radius: 8px; padding: 6px 2px; font-size: 14px; outline: none; }
     .stepper-wrap button { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--input-border); background: var(--bg-input); color: var(--text-main); cursor: pointer; font-size: 16px; line-height: 1; transition: background .15s, border-color .15s; }
     .stepper-wrap button:hover { background: var(--btn-secondary-bg); border-color: var(--accent); }
+    .stepper-wrap input[type="number"]::-webkit-outer-spin-button,
+    .stepper-wrap input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .stepper-wrap input[type="number"] { -moz-appearance: textfield; }
 
     .modern-textarea { width: 100%; min-height: 120px; border: 1px solid var(--input-border); background: var(--bg-input); color: var(--text-main); border-radius: 10px; padding: 12px; font-size: 13px; font-family: ui-monospace, monospace; outline: none; resize: vertical; }
     .modern-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(2,132,199,0.12); }
@@ -309,7 +312,7 @@
 
     <!-- PASSWORD GENERATOR -->
     <section class="card">
-      <div class="card-title"><span class="icon">P</span> Password Generator</div>
+      <div class="card-title">Password Generator</div>
 
       <div class="range-wrap">
         <label for="lengthSlider">Length</label>
@@ -383,7 +386,7 @@
 
     <!-- USERNAME GENERATOR -->
     <section class="card">
-      <div class="card-title"><span class="icon">U</span> Username Generator</div>
+      <div class="card-title">Username Generator</div>
       <div class="field-row">
         <label for="usernameMode">Mode</label>
         <select id="usernameMode">
@@ -397,6 +400,7 @@
           <option value="leet">Leet Word</option>
           <option value="camel">CamelCase</option>
           <option value="initials">Initials + Number</option>
+          <option value="trulyRandom">Truly Random</option>
         </select>
         <label><input type="checkbox" id="usernameIncludeNumbers" checked style="margin-left:4px;"> Include numbers</label>
         <label for="usernameNumberCount">Count</label>
@@ -413,7 +417,7 @@
     <!-- BATCH GENERATOR -->
     <section class="card details-card" id="batchCard">
       <details>
-        <summary><span class="icon">B</span> Batch Generator</summary>
+        <summary>Batch Generator</summary>
         <div class="details-body">
           <div class="field-row">
             <label for="batchCount">Count</label>
@@ -449,7 +453,7 @@
           <details class="nested-details" style="margin-top:10px;">
             <summary style="cursor:pointer;color:var(--accent);font-size:13px;font-weight:600;">Username Options</summary>
             <div class="field-row" style="margin-top:8px;">
-              <label>Mode <select id="batchUsernameMode"><option value="words">words</option><option value="words2">words2</option><option value="name_word">name_word</option><option value="anon">anon</option><option value="alphanum">alphanum</option><option value="leet">leet</option><option value="camel">camel</option><option value="initials">initials</option><option value="mixed">mixed</option></select></label>
+              <label>Mode <select id="batchUsernameMode"><option value="words">words</option><option value="words2">words2</option><option value="name_word">name_word</option><option value="anon">anon</option><option value="alphanum">alphanum</option><option value="leet">leet</option><option value="camel">camel</option><option value="initials">initials</option><option value="mixed">mixed</option><option value="trulyRandom">trulyRandom</option></select></label>
               <label><input type="checkbox" id="batchUsernameIncludeNumbers" checked> Numbers</label>
               <label>Count <div class="stepper-wrap"><button type="button" aria-label="decrease" onclick="stepNumber('batchUsernameNumberCount', -1)">−</button><input type="number" id="batchUsernameNumberCount" value="6" min="0" max="10" style="width:56px;"><button type="button" aria-label="increase" onclick="stepNumber('batchUsernameNumberCount', 1)">+</button></div></label>
             </div>
@@ -482,7 +486,7 @@
 
     <!-- EXPORT SINGLE -->
     <section class="card">
-      <div class="card-title"><span class="icon">E</span> Export Current Pair</div>
+      <div class="card-title">Export Current Pair</div>
       <div class="field-row">
         <label>Format <select id="exportFormat"><option value="csv">CSV</option><option value="json">JSON</option><option value="oneperline">One-per-line</option><option value="keepass">KeePass CSV</option></select></label>
         <label><input type="checkbox" id="exportEncrypt"> Encrypt</label>
@@ -494,7 +498,7 @@
     <!-- HISTORY -->
     <section class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-        <div class="card-title" style="margin:0;"><span class="icon">H</span> History</div>
+        <div class="card-title" style="margin:0;">History</div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <label style="font-size:13px;color:var(--text-muted);"><input type="checkbox" id="historyToggle"> Show</label>
           <label style="font-size:13px;color:var(--text-muted);"><input type="checkbox" id="historyEncrypt"> Encrypt</label>
@@ -534,11 +538,11 @@
       const el = document.getElementById(id);
       if (!el) return;
       let val = parseInt(el.value, 10) || 0;
-      const min = parseInt(el.getAttribute('data-min'), 10);
-      const max = parseInt(el.getAttribute('data-max'), 10);
+      const min = parseInt(el.min, 10);
+      const max = parseInt(el.max, 10);
       val += delta;
-      if (!Number.isNaN(min) && val < min) val = min;
-      if (!Number.isNaN(max) && val > max) val = max;
+      if (Number.isFinite(min) && val < min) val = min;
+      if (Number.isFinite(max) && val > max) val = max;
       el.value = val;
       el.dispatchEvent(new Event('input', { bubbles: true }));
     }
@@ -990,6 +994,12 @@ function createPassword(opts = {}) {
         const a = pick(commonNames);
         const b = pick(commonNames);
         username = (a.charAt(0) + b.charAt(0)).toUpperCase() + (includeNumbers && numCount > 0 ? randomDigits(numCount) : '');
+      } else if (mode === 'trulyRandom') {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const len = numCount > 0 ? numCount : 12;
+        let s = '';
+        for (let i = 0; i < len; i++) s += chars[secureRandInt(chars.length)];
+        username = s;
       } else { // mixed
         const generators = [];
         if (useNames) generators.push(() => {
